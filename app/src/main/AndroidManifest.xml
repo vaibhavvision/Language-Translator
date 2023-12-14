@@ -8,13 +8,19 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true"
-        android:usesCleartextTraffic="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
         android:theme="@style/Theme.TranslateAllLanguagesApp"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".multiscreen.MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".multiscreen.StartActivity"
+            android:exported="false" />
         <activity
             android:name=".multiscreen.SplashActivity"
             android:exported="true">
@@ -24,6 +30,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".multiscreen.Intro.IntroActivity"
+            android:exported="true" />
+        <activity
+            android:name=".multiscreen.language.activity.LanguageActivity"
+            android:exported="true" />
     </application>
 
 </manifest>

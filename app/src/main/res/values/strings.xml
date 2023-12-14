@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Translate All Languages App</string>
+    <string name="title2">Translate Camera</string>
+    <string name="dec2">Capture images to translate directly from\ninformation boards, documents, or any\nbold text quickly and efficie...</string>
+    <string name="title3">Translate Conversation</string>
+    <string name="dec3">Translate every conversation in real-time, no\nmore language barriers you and the\nworld.</string>
+    <string name="title1">Translation Text</string>
+    <string name="dec1">Easily translate long or short passages of text\nfrom any language into the target language\nin just a few seconds.</string>
+    <string name="txtletsstrat">Let’s Start</string>
 </resources>

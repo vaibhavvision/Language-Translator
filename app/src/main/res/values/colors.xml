@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="unselect_dot">#1A000000</color>
     <color name="select_dot">#6B2FE0</color>
+
 </resources>
