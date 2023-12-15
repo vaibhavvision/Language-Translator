@@ -1,4 +1,4 @@
-package com.translatealll.anguagesapp.multiscreen.Intro;
+package com.translatealll.anguagesapp.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,10 +8,9 @@ import android.view.View;
 
 import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.databinding.ActivityIntroBinding;
-import com.translatealll.anguagesapp.multiscreen.Constant;
-import com.translatealll.anguagesapp.multiscreen.PrefFile;
-import com.translatealll.anguagesapp.multiscreen.StartActivity;
-import com.translatealll.anguagesapp.multiscreen.language.activity.LanguageActivity;
+import com.translatealll.anguagesapp.activity.LanguageActivity;
+import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.utils.PrefFile;
 
 
 public class IntroActivity extends AppCompatActivity {
@@ -48,10 +47,9 @@ public class IntroActivity extends AppCompatActivity {
     }
 
     public void goToNextScreen() {
-//        PrefFile.getInstance().setString(Constant.NEXT, "intro");
+        PrefFile.getInstance().setString(Constant.NEXT, "intro");
         Intent intent = new Intent(this, LanguageActivity.class);
         startActivity(intent);
-//        InterstitialAds.showAds(this, intent, false, true);
         finish();
     }
 }

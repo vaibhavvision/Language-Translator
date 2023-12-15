@@ -1,4 +1,4 @@
-package com.translatealll.anguagesapp.multiscreen.language.activity;
+package com.translatealll.anguagesapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,11 +8,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.multiscreen.StartActivity;
-import com.translatealll.anguagesapp.multiscreen.language.adapter.LanguageAdapter;
-import com.translatealll.anguagesapp.multiscreen.language.model.Country;
+import com.translatealll.anguagesapp.adapter.LanguageAdapter;
+import com.translatealll.anguagesapp.model.Country;
+import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.utils.PrefFile;
 
 import java.util.ArrayList;
 
@@ -20,8 +20,8 @@ public class LanguageActivity extends AppCompatActivity {
     public static int isSelected = -1;
     private final ArrayList<Country> mLanguages = new ArrayList<>();
     public String[] langTitle = new String[]{"Hi!\nI'm Sam",
-            "Hola!\nSoy Sam", "Salut!\nJe suis Sam", "Hallo!\nIch bin Sam", "Hola!\nSoy Sam", "привет\nя сэм", "嗨\n我是山姆", "merhaba\nben sam", "hoi ik\nben sam", "أنا سام يا\n", "হে\nআমি স্যাম","Oi,\nEu sou Sam"};
-    public String[] langName = new String[]{"English","Spanish","French","German","Spanish","Russian","Chinese","Turkish","Dutch","Arabic","Bangla","Portuguese"};
+            "Hola!\nSoy Sam", "Salut!\nJe suis Sam", "Hallo!\nIch bin Sam", "Hola!\nSoy Sam", "привет\nя сэм", "嗨\n我是山姆", "merhaba\nben sam", "hoi ik\nben sam", "أنا سام يا\n", "হে\nআমি স্যাম", "Oi,\nEu sou Sam"};
+    public String[] langName = new String[]{"English", "Spanish", "French", "German", "Spanish", "Russian", "Chinese", "Turkish", "Dutch", "Arabic", "Bangla", "Portuguese"};
     private LanguageAdapter mItemLanguageAdapter;
 
     @Override
@@ -50,10 +50,10 @@ public class LanguageActivity extends AppCompatActivity {
                 if (isSelected == -1) {
                     Toast.makeText(LanguageActivity.this, "Please select your language!", Toast.LENGTH_SHORT).show();
                 } else {
-//                    SharedPreferenceHelper.setSharedPreferenceBoolean(LanguageActivity.this,"Language",true);
+                    PrefFile.getInstance().setString(Constant.NEXT, "lang");
                     Intent intent = new Intent(LanguageActivity.this, StartActivity.class);
                     startActivity(intent);
-//                    LoadAndShowInterAds.loadAndShowInter(LanguageActivity.this, intent, true, ManagerAdsData.appInnerClickCntSwAd);
+                    finish();
                 }
             }
         });

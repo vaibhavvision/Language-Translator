@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".utils.LanguageApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -16,13 +17,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".multiscreen.MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".multiscreen.StartActivity"
+            android:name=".activity.StartActivity"
             android:exported="false" />
         <activity
-            android:name=".multiscreen.SplashActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,11 +32,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".multiscreen.Intro.IntroActivity"
+            android:name=".activity.IntroActivity"
             android:exported="true" />
         <activity
-            android:name=".multiscreen.language.activity.LanguageActivity"
+            android:name=".activity.LanguageActivity"
             android:exported="true" />
+        <activity android:name=".activity.PrivacyPolicyActivity"
+            android:exported="true">
+
+        </activity>
     </application>
 
 </manifest>

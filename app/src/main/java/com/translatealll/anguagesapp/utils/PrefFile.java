@@ -1,4 +1,4 @@
-package com.translatealll.anguagesapp.multiscreen;
+package com.translatealll.anguagesapp.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;

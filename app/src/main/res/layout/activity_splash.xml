@@ -30,6 +30,7 @@
             android:layout_height="350dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
+            android:layout_marginTop="@dimen/_30sdp"
             android:src="@drawable/bgsplsh1" />
 
     </RelativeLayout>
@@ -51,6 +52,7 @@
             android:layout_centerInParent="true"
             android:layout_marginBottom="@dimen/_30sdp"
             android:layout_gravity="center"
+            android:layout_marginTop="@dimen/_10sdp"
             android:src="@drawable/app_icon" />
 
         <TextView
