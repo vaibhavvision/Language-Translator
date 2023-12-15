@@ -1,4 +1,4 @@
-package com.translatealll.anguagesapp.multiscreen;
+package com.translatealll.anguagesapp.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 

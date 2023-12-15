@@ -1,4 +1,4 @@
-package com.translatealll.anguagesapp.multiscreen.language.model;
+package com.translatealll.anguagesapp.model;
 
 import kotlin.jvm.internal.Intrinsics;
 

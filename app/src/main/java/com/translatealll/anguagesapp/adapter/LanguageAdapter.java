@@ -1,7 +1,7 @@
-package com.translatealll.anguagesapp.multiscreen.language.adapter;
+package com.translatealll.anguagesapp.adapter;
 
 
-import static com.translatealll.anguagesapp.multiscreen.language.activity.LanguageActivity.isSelected;
+import static com.translatealll.anguagesapp.activity.LanguageActivity.isSelected;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.multiscreen.language.model.Country;
+import com.translatealll.anguagesapp.model.Country;
 
 import java.util.ArrayList;
 

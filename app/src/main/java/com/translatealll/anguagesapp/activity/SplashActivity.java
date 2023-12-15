@@ -1,4 +1,4 @@
-package com.translatealll.anguagesapp.multiscreen;
+package com.translatealll.anguagesapp.activity;
 
 
 import android.annotation.SuppressLint;
@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.multiscreen.Intro.IntroActivity;
-import com.translatealll.anguagesapp.multiscreen.language.activity.LanguageActivity;
+import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.utils.PrefFile;
 
 
 public class SplashActivity extends AppCompatActivity {
@@ -51,18 +51,16 @@ public class SplashActivity extends AppCompatActivity {
 
 
     private void inNext() {
-        /*if (PrefFile.getInstance().getString(Constant.NEXT).equals("intro")) {
+
+        if (PrefFile.getInstance().getString(Constant.NEXT).equals("intro")) {
             intent = new Intent(SplashActivity.this, LanguageActivity.class);
         } else if (PrefFile.getInstance().getString(Constant.NEXT).equals("lang")) {
             intent = new Intent(SplashActivity.this, StartActivity.class);
-        } else if (PrefFile.getInstance().getString(Constant.NEXT).equals("start")) {
-            intent = new Intent(SplashActivity.this, MainActivity.class);
         } else {
-            intent = new Intent(SplashActivity.this, TutorialActivity.class);
-        }*/
-//        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(new Intent(SplashActivity.this, IntroActivity.class));
-//        startActivity(intent);
+            intent = new Intent(SplashActivity.this, IntroActivity.class);
+        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
         finish();
     }
 
