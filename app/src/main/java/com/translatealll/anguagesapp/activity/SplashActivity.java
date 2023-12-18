@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.translatealll.anguagesapp.R;
+import com.translatealll.anguagesapp.database.DownloadedLngsTable;
+import com.translatealll.anguagesapp.database.RoomDB;
 import com.translatealll.anguagesapp.utils.Constant;
 import com.translatealll.anguagesapp.utils.PrefFile;
 
@@ -22,6 +24,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
     Intent intent;
+    RoomDB roomDB;
 
     ImageView imageView,imglogo;
 
@@ -35,6 +38,12 @@ public class SplashActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imganim);
         imglogo = findViewById(R.id.imglogo);
 
+        roomDB = RoomDB.getRoomDBInstance(this);
+        DownloadedLngsTable downloadedLngs_Table = new DownloadedLngsTable();
+        downloadedLngs_Table.setDownloadedlng_name("ENGLISH");
+        if (roomDB.downloadedlngs_dao().SelectDownloadedLngs().size() == 0) {
+            roomDB.downloadedlngs_dao().InsertDownloaded_lngs(downloadedLngs_Table);
+        }
 
         Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.anim_popup);
         imageView.startAnimation(animation);
