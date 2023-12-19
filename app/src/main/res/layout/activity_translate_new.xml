@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/white"
     tools:context=".activity.TranslateNewActivity">
 
     <RelativeLayout
@@ -78,6 +79,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/_15sdp"
                         android:layout_weight="1"
+                        android:singleLine="true"
                         android:fontFamily="@font/lato_medium"
                         android:includeFontPadding="false"
                         android:text="English"
@@ -120,6 +122,7 @@
                         android:fontFamily="@font/lato_medium"
                         android:includeFontPadding="false"
                         android:text="Spanish"
+                        android:singleLine="true"
                         android:textAllCaps="false"
                         android:textColor="@color/white"
                         android:textSize="@dimen/_14ssp" />
@@ -144,38 +147,28 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal">
 
-                    <ScrollView
-                        android:id="@+id/etscrollview"
+
+                    <EditText
+                        android:id="@+id/et_userinput"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/_70sdp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:scrollbars="none">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginHorizontal="@dimen/_10sdp"
-                            android:layout_marginTop="@dimen/_10sdp">
-
-                            <EditText
-                                android:id="@+id/et_userinput"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@android:color/transparent"
-                                android:gravity="start"
-                                android:hint="Enter Text"
-                                android:imeOptions="actionDone"
-                                android:inputType="textMultiLine"
-                                android:overScrollMode="always"
-                                android:scrollbarStyle="insideInset"
-                                android:textColor="@color/black"
-                                android:textSize="@dimen/_14ssp" />
-
-                        </LinearLayout>
-                    </ScrollView>
+                        android:background="@android:color/transparent"
+                        android:gravity="start"
+                        android:minHeight="@dimen/_60sdp"
+                        android:hint="Enter Text"
+                        android:lines="4"
+                        android:layout_marginHorizontal="@dimen/_10sdp"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:imeOptions="actionDone"
+                        android:inputType="textMultiLine"
+                        android:overScrollMode="always"
+                        android:scrollbarStyle="insideInset"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/_12ssp" />
 
 
                     <ImageView
@@ -192,6 +185,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
+                    android:layout_marginTop="@dimen/_10sdp"
                     android:layout_marginEnd="@dimen/_10sdp"
                     android:layout_marginBottom="@dimen/_13sdp"
                     android:orientation="horizontal"

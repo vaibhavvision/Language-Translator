@@ -1,6 +1,8 @@
 package com.translatealll.anguagesapp.activity;
 
 import static com.translatealll.anguagesapp.activity.MainActivity.getPref;
+import static com.translatealll.anguagesapp.activity.MainActivity.lng1name;
+import static com.translatealll.anguagesapp.activity.MainActivity.lng2name;
 
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -13,15 +15,13 @@ import android.text.TextWatcher;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.RotateAnimation;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.window.OnBackInvokedDispatcher;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -33,7 +33,6 @@ import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.database.DownloadedLngsTable;
 import com.translatealll.anguagesapp.database.RoomDB;
 import com.translatealll.anguagesapp.database.WordsHistoryTable;
-import com.translatealll.anguagesapp.databinding.ActivityMainBinding;
 import com.translatealll.anguagesapp.databinding.ActivityTranslateNewBinding;
 import com.translatealll.anguagesapp.inter.BottomSheetFragclicks;
 import com.translatealll.anguagesapp.utils.BottomsheetFrag;
@@ -47,7 +46,7 @@ import java.util.Locale;
 
 import kotlin.text.Typography;
 
-public class TranslateNewActivity extends AppCompatActivity implements BottomSheetFragclicks{
+public class TranslateNewActivity extends AppCompatActivity implements BottomSheetFragclicks {
 
     public static String CameraPic = "";
 
@@ -55,9 +54,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
     public static int iconlang2;
     public static String lang_no;
     public static String lng1code;
-    public static String lng1name;
     public static String lng2code;
-    public static String lng2name;
     public static SharedPreferences main_pref;
     public static RoomDB roomDB;
 
@@ -74,11 +71,44 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
 
     public static boolean isFirstSpeacker = false;
     ActivityTranslateNewBinding binding;
+    String pasteText;
+
+    boolean isClearMain = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityTranslateNewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        pasteText = getIntent().getStringExtra("mic");
+
+        String data = getIntent().getStringExtra("mic");
+        binding.etUserinput.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                if (binding.etUserinput.hasFocus()) {
+                    v.getParent().requestDisallowInterceptTouchEvent(true);
+                    switch (event.getAction() & MotionEvent.ACTION_MASK){
+                        case MotionEvent.ACTION_SCROLL:
+                            v.getParent().requestDisallowInterceptTouchEvent(false);
+                            return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        if (getIntent().getStringExtra("pos").equals("1") && (!data.isEmpty())) {
+            binding.etUserinput.setText(pasteText);
+            binding.ivCopy.setVisibility(View.VISIBLE);
+            binding.ivSpeaker.setVisibility(View.VISIBLE);
+            binding.ivNewTranslation.setVisibility(View.VISIBLE);
+            binding.ivClearText.setVisibility(View.VISIBLE);
+        } else {
+            binding.etUserinput.setText("");
+            binding.tvTranslatedtext.setText("");
+        }
+
         tv_lang1 = findViewById(R.id.tv_lang1);
         tv_lang2 = findViewById(R.id.tv_lang2);
 
@@ -95,15 +125,13 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         binding.etUserinput.setMovementMethod(new ScrollingMovementMethod());
         kprogresshud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).setLabel("Translating ").setCancellable(true).setAnimationSpeed(2).setDimAmount(0.5f);
         Log.e("flow", "onCreate:size od downloaded and temp list " + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
-        lng1name = getPref(this).getString("lng1name", "English");
-        lng2name = getPref(this).getString("lng2name", "French");
+        lng1name = getPref(this).getString("lng1name", "ENGLISH");
+        lng2name = getPref(this).getString("lng2name", "FRENCH");
         String upperString = lng1name.substring(0, 1).toUpperCase() + lng1name.substring(1).toLowerCase();
         String upperString1 = lng2name.substring(0, 1).toUpperCase() + lng2name.substring(1).toLowerCase();
 
         binding.tvLang1.setText(upperString);
         binding.tvLang2.setText(upperString1);
-        binding.etUserinput.setText("");
-        binding.tvTranslatedtext.setText("");
 
 
         binding.linearLeftLang.setOnClickListener(new View.OnClickListener() {
@@ -116,7 +144,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
                 bundle.putString("from", "mainActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Constant.LEFTRIGHT,"new");
+                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "new");
             }
         });
 
@@ -130,7 +158,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
                 bundle.putString("from", "mainActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Constant.LEFTRIGHT,"new");
+                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "new");
             }
         });
 
@@ -144,6 +172,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         binding.ivClearText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                isClearMain = true;
                 binding.etUserinput.setText("");
                 binding.ivNewTranslation.setVisibility(View.GONE);
                 binding.ivClearText.setVisibility(View.GONE);
@@ -153,9 +182,39 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         });
 
 
+        binding.etUserinput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.e("beforeTextChanged", "beforeTextChanged: " + charSequence);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.e("onTextChanged", "onTextChanged: " + charSequence);
+                if (charSequence.length() > 0) {
+                    binding.ivCopy.setVisibility(View.VISIBLE);
+                    binding.ivSpeaker.setVisibility(View.VISIBLE);
+                    binding.ivNewTranslation.setVisibility(View.VISIBLE);
+                    binding.ivClearText.setVisibility(View.VISIBLE);
+                } else {
+                    binding.ivCopy.setVisibility(View.INVISIBLE);
+                    binding.ivSpeaker.setVisibility(View.INVISIBLE);
+                    binding.ivNewTranslation.setVisibility(View.GONE);
+                    binding.ivClearText.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                Log.e("afterTextChanged", "afterTextChanged: " + editable.toString());
+            }
+        });
+
+
         binding.ivNewTranslation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                isClearMain = true;
                 binding.etUserinput.setText("");
                 binding.ivNewTranslation.setVisibility(View.GONE);
                 binding.ivClearText.setVisibility(View.GONE);
@@ -252,12 +311,8 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         binding.ivTranslate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!binding.etUserinput.getText().toString().isEmpty()) {
+                if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
                     translateLanguage();
-                    binding.ivCopy.setVisibility(View.VISIBLE);
-                    binding.ivSpeaker.setVisibility(View.VISIBLE);
-                    binding.ivNewTranslation.setVisibility(View.VISIBLE);
-                    binding.ivClearText.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -287,7 +342,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
             bundle2.putString("belong", "lan1");
             bottomsheetFrag2.setArguments(bundle2);
             bottomsheetFrag2.show(getSupportFragmentManager(), "TAG");
-        }  else {
+        } else {
             Log.e("aaaaaaaaa", "The ad was dismissed.");
             TranslateWords(binding.etUserinput.getText().toString());
         }
@@ -348,10 +403,12 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
                 lng2name = BottomsheetFrag.languagepack;
             }
         }
-        tv_lang1.setText(lng1name);
-        tv_lang2.setText(lng2name);
-        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
-        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
+        String upperString = lng1name.substring(0, 1).toUpperCase() + lng1name.substring(1).toLowerCase();
+        String upperString1 = lng2name.substring(0, 1).toUpperCase() + lng2name.substring(1).toLowerCase();
+        tv_lang1.setText(upperString);
+        tv_lang2.setText(upperString1);
+        getPref(context).edit().putString("lng1name", lng1name).apply();
+        getPref(context).edit().putString("lng2name", lng2name).apply();
         getPref(context).edit().putInt("iconlang1", iconlang1).apply();
         getPref(context).edit().putInt("iconlang2", iconlang2).apply();
     }
@@ -1331,11 +1388,10 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
     }
 
 
-
     @Override
     public void onBackPressed() {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("translate",binding.etUserinput.getText().toString());
+        resultIntent.putExtra("clear", isClearMain);
         setResult(RESULT_OK, resultIntent);
         finish();
         super.onBackPressed();

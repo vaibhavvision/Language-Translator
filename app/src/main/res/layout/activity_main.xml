@@ -4,6 +4,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".activity.MainActivity">
 
     <LinearLayout
@@ -36,13 +37,7 @@
                 android:textColor="@color/black"
                 android:textSize="@dimen/_15sdp" />
 
-            <ImageView
-                android:id="@+id/vip"
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_40sdp"
-                android:layout_marginHorizontal="@dimen/_8sdp"
-                android:padding="@dimen/_5sdp"
-                android:src="@drawable/ic_vip" />
+
 
             <ImageView
                 android:id="@+id/favorite"
@@ -94,6 +89,7 @@
                             android:fontFamily="@font/lato_medium"
                             android:includeFontPadding="false"
                             android:text="English"
+                            android:singleLine="true"
                             android:textAllCaps="false"
                             android:textColor="@color/white"
                             android:textSize="@dimen/_14ssp" />
@@ -133,6 +129,7 @@
                             android:fontFamily="@font/lato_medium"
                             android:includeFontPadding="false"
                             android:text="Spanish"
+                            android:singleLine="true"
                             android:textAllCaps="false"
                             android:textColor="@color/white"
                             android:textSize="@dimen/_14ssp" />
@@ -168,37 +165,32 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
 
-                            <ScrollView
-                                android:id="@+id/etscrollview"
+                            <EditText
+                                android:id="@+id/et_userinput"
                                 android:layout_width="match_parent"
-                                android:layout_height="@dimen/_100sdp"
-                                android:scrollbars="none"
-                                android:layout_weight="1">
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/transparent"
+                                android:gravity="start"
+                                android:minHeight="@dimen/_100sdp"
+                                android:hint="Enter Text"
+                                android:lines="4"
+                                android:layout_marginHorizontal="@dimen/_10sdp"
+                                android:layout_marginTop="@dimen/_10sdp"
+                                android:imeOptions="actionDone"
+                                android:inputType="textMultiLine"
+                                android:overScrollMode="always"
+                                android:scrollbarStyle="insideInset"
+                                android:textColor="@color/black"
+                                android:textSize="@dimen/_12ssp" />
 
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_marginHorizontal="@dimen/_10sdp"
-                                    android:layout_marginTop="@dimen/_10sdp">
-
-                                    <EditText
-                                        android:id="@+id/et_userinput"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="@dimen/_76sdp"
-                                        android:background="@android:color/transparent"
-                                        android:gravity="start"
-                                        android:cursorVisible="false"
-                                        android:hint="Enter Text"
-                                        android:inputType="textMultiLine"
-                                        android:overScrollMode="always"
-                                        android:scrollbarStyle="insideInset"
-                                        android:textColor="@color/black"
-                                        android:textSize="@dimen/_14ssp" />
-
-                                </LinearLayout>
-                            </ScrollView>
-
-
+                            <ImageView
+                                android:id="@+id/ivClearText"
+                                android:layout_width="@dimen/_20sdp"
+                                android:layout_height="@dimen/_20sdp"
+                                android:layout_marginTop="@dimen/_10sdp"
+                                android:layout_marginEnd="@dimen/_10sdp"
+                                android:src="@drawable/ic_clear_close"
+                                android:visibility="gone" />
 
                         </LinearLayout>
 
