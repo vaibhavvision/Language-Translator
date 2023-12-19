@@ -29,7 +29,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    buildFeatures{
+    buildFeatures {
         viewBinding = true
     }
 }
@@ -53,8 +53,13 @@ dependencies {
 
     implementation 'com.kaopiz:kprogresshud:1.2.0'
     implementation 'com.google.mlkit:translate:16.1.1'
-    implementation 'com.github.CanHub:Android-Image-Cropper:2.2.1'
     implementation 'com.otaliastudios:cameraview:2.7.2'
+
+    implementation 'com.karumi:dexter:6.2.3'
+    implementation 'com.google.android.gms:play-services-vision:19.0.0'
+
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
+
 
 
 }
