@@ -1,7 +1,6 @@
 package com.translatealll.anguagesapp.adapter;
 
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -25,6 +24,7 @@ import com.google.mlkit.common.model.RemoteModelManager;
 import com.google.mlkit.nl.translate.TranslateRemoteModel;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.translatealll.anguagesapp.R;
+import com.translatealll.anguagesapp.activity.ChatActivity;
 import com.translatealll.anguagesapp.activity.MainActivity;
 import com.translatealll.anguagesapp.activity.TranslateNewActivity;
 import com.translatealll.anguagesapp.database.DownloadedLngsTable;
@@ -124,16 +124,14 @@ public class DownlodlngsAdapter extends RecyclerView.Adapter<DownlodlngsAdapter.
                 langDownloadInterface.OnDownloadComplete(false, adapterViewHolder.tv_langname.getText().toString(), MainActivity.iconlang2);
             }
 
-//            if (from == "chatActivity") {
-//                ChatActivity.setChatData(context);
-//                return;
-//            } else {
-//                return;
-//            }
-            if (PrefFile.getInstance().getString(Constant.LEFTRIGHT).equals("main")){
+            if (PrefFile.getInstance().getString(Constant.LEFTRIGHT).equals("main")) {
                 MainActivity.setData(context);
-            }else {
-                TranslateNewActivity.setData(context);
+            } else {
+                if (PrefFile.getInstance().getString(Constant.LEFTRIGHT).equals("chat")) {
+                    ChatActivity.setData(context);
+                } else {
+                    TranslateNewActivity.setData(context);
+                }
             }
 
             notifyDataSetChanged();
@@ -681,17 +679,13 @@ public class DownlodlngsAdapter extends RecyclerView.Adapter<DownlodlngsAdapter.
                     langDownloadInterface.OnDownloadComplete(true, lngs_list.get(position).getTitle(), MainActivity.iconlang2);
                 }
 
-//                if (from == "chatActivity") {
-//                    ChatActivity.setChatData(context);
-//                } else {
-//                }
-
-                if (PrefFile.getInstance().getString(Constant.LEFTRIGHT).equals("main")){
+                if (PrefFile.getInstance().getString(Constant.LEFTRIGHT).equals("main")) {
                     MainActivity.setData(context);
-                }else {
+                } else if (PrefFile.getInstance().getString(Constant.LEFTRIGHT).equals("chat")) {
+                    ChatActivity.setData(context);
+                } else {
                     TranslateNewActivity.setData(context);
                 }
-
 
 
                 notifyDataSetChanged();
@@ -723,8 +717,6 @@ public class DownlodlngsAdapter extends RecyclerView.Adapter<DownlodlngsAdapter.
             flag = (ImageView) itemView.findViewById(R.id.flag_image);
         }
     }
-
-
 
 
 }

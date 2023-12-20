@@ -28,8 +28,7 @@ public class BaseActivity extends AppCompatActivity {
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                boolean languageSelection = selectLanguage(tv_lang, langg, menuItem);
-                return languageSelection;
+                return selectLanguage(tv_lang, langg, menuItem);
             }
         });
         return language;

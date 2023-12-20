@@ -1,39 +1,50 @@
 package com.translatealll.anguagesapp.activity;
 
+import static com.translatealll.anguagesapp.activity.MainActivity.downloadedlngs_list;
 import static com.translatealll.anguagesapp.activity.MainActivity.getPref;
+import static com.translatealll.anguagesapp.activity.MainActivity.iconlang1;
+import static com.translatealll.anguagesapp.activity.MainActivity.iconlang2;
+import static com.translatealll.anguagesapp.activity.MainActivity.lang_no;
 import static com.translatealll.anguagesapp.activity.MainActivity.lng1name;
 import static com.translatealll.anguagesapp.activity.MainActivity.lng2name;
+import static com.translatealll.anguagesapp.activity.MainActivity.temp_downloadedlngs_list;
 
-import android.content.ClipboardManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.text.method.ArrowKeyMovementMethod;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.database.DownloadedLngsTable;
+import com.translatealll.anguagesapp.adapter.ChatAdapter;
+import com.translatealll.anguagesapp.database.ChatTable;
 import com.translatealll.anguagesapp.database.RoomDB;
 import com.translatealll.anguagesapp.database.WordsHistoryTable;
-import com.translatealll.anguagesapp.databinding.ActivityTranslateNewBinding;
 import com.translatealll.anguagesapp.inter.BottomSheetFragclicks;
 import com.translatealll.anguagesapp.utils.BottomsheetFrag;
 import com.translatealll.anguagesapp.utils.Constant;
@@ -41,351 +52,92 @@ import com.translatealll.anguagesapp.utils.PrefFile;
 import com.translatealll.anguagesapp.utils.TranslateLanguage;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.Arrays;
 
 import kotlin.text.Typography;
 
-public class TranslateNewActivity extends AppCompatActivity implements BottomSheetFragclicks {
 
-    public static String CameraPic = "";
-
-    public static int iconlang1;
-    public static int iconlang2;
-    public static String lang_no;
-    public static String lng1code;
-    public static String lng2code;
-    public static SharedPreferences main_pref;
-    public static RoomDB roomDB;
-
-    public static List<DownloadedLngsTable> downloadedlngs_list = new ArrayList();
-    public static ArrayList<String> temp_downloadedlngs_list = new ArrayList<>();
-    boolean is_btn_translate;
-    KProgressHUD kprogresshud;
-    Animation translatedcard_anim;
-    TextToSpeech txttospeech;
-    boolean Is_btn_translate_auto_click = false;
-    public static String from;
-    public static TextView tv_lang1;
-    public static TextView tv_lang2;
-
-    public static boolean isFirstSpeacker = false;
-    ActivityTranslateNewBinding binding;
-    String pasteText;
-
-    boolean isClearMain = false;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityTranslateNewBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        pasteText = getIntent().getStringExtra("mic");
-
-        binding.etUserinput.setOnTouchListener(new View.OnTouchListener() {
-
-            public boolean onTouch(View v, MotionEvent event) {
-                if (binding.etUserinput.hasFocus()) {
-                    v.getParent().requestDisallowInterceptTouchEvent(true);
-                    switch (event.getAction() & MotionEvent.ACTION_MASK){
-                        case MotionEvent.ACTION_SCROLL:
-                            v.getParent().requestDisallowInterceptTouchEvent(false);
-                            return true;
-                    }
-                }
-                return false;
-            }
-        });
-
-        if (getIntent().getStringExtra("pos").equals("1") && (!pasteText.isEmpty())) {
-            binding.etUserinput.setText(pasteText);
-            binding.ivCopy.setVisibility(View.VISIBLE);
-            binding.ivSpeaker.setVisibility(View.VISIBLE);
-            binding.ivNewTranslation.setVisibility(View.VISIBLE);
-            binding.ivClearText.setVisibility(View.VISIBLE);
-        } else {
-            binding.etUserinput.setText("");
-            binding.tvTranslatedtext.setText("");
+public class ChatActivity extends AppCompatActivity implements BottomSheetFragclicks {
+    static final boolean assertionsDisabled = false;
+    public static ImageView btn_M1;
+    public static ImageView btn_M2;
+    public static ImageView btn_lng_transition;
+    public static ImageView btn_mic1;
+    public static ImageView btn_mic2;
+    public static RecyclerView chatRecView;
+    public static ChatAdapter chat_adapter;
+    public static Context context;
+    static ArrayList<ChatTable> chatlist = new ArrayList<>();
+    static LinearLayout mics_layout;
+    static ConstraintLayout nochatanim_layout;
+    static RoomDB roomDB;
+    static TextView tv_lang1;
+    static TextView tv_lang2;
+    LinearLayout btn_Select1;
+    LinearLayout btn_Select2;
+    String chatname;
+    ChatTable chatobj;
+    KProgressHUD hud;
+    TranslatorOptions options;
+    String texttotranslate;
+    String translatedtext1;
+    Translator translator;
+    ImageView img_lng_transition;
+    String user;
+    ImageView back;
+    ArrayList<WordsHistoryTable> lngslist = new ArrayList<>();
+    int counter = 0;
+    ActivityResultLauncher<Intent> intentforvoicetotext = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback() {
+        @Override
+        public void onActivityResult(Object obj) {
+            translateText((ActivityResult) obj);
         }
+    });
 
-        tv_lang1 = findViewById(R.id.tv_lang1);
-        tv_lang2 = findViewById(R.id.tv_lang2);
-
-        roomDB = RoomDB.getRoomDBInstance(this);
-        temp_downloadedlngs_list.clear();
-        downloadedlngs_list.clear();
-        downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
-        for (int i = 0; i < downloadedlngs_list.size(); i++) {
-            Log.d("flow", "onCreatezzz: " + downloadedlngs_list.get(i).getDownloadedlng_name());
-            temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
+    public static void setChatData(Context context2) {
+        MainActivity.downloadedlngs_list.clear();
+        MainActivity.temp_downloadedlngs_list.clear();
+        MainActivity.downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
+        for (int i = 0; i < MainActivity.downloadedlngs_list.size(); i++) {
+            MainActivity.temp_downloadedlngs_list.add(MainActivity.downloadedlngs_list.get(i).getDownloadedlng_name());
         }
-
-        translatedcard_anim = AnimationUtils.loadAnimation(this, R.anim.translatedcard_anim);
-        binding.etUserinput.setMovementMethod(new ScrollingMovementMethod());
-        kprogresshud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).setLabel("Translating ").setCancellable(true).setAnimationSpeed(2).setDimAmount(0.5f);
-        Log.e("flow", "onCreate:size od downloaded and temp list " + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
-        lng1name = getPref(this).getString("lng1name", "ENGLISH");
-        lng2name = getPref(this).getString("lng2name", "FRENCH");
-
-        binding.tvLang1.setText(lng1name);
-        binding.tvLang2.setText(lng2name);
-
-        binding.linearLeftLang.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                lang_no = "1";
-                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(TranslateNewActivity.this);
-                Bundle bundle = new Bundle();
-                bundle.putString("langno", "1");
-                bundle.putString("from", "mainActivity");
-                bottomsheetFrag.setArguments(bundle);
-                bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "new");
-            }
-        });
-
-        binding.linearRightLang.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                lang_no = "2";
-                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(TranslateNewActivity.this);
-                Bundle bundle = new Bundle();
-                bundle.putString("langno", "2");
-                bundle.putString("from", "mainActivity");
-                bottomsheetFrag.setArguments(bundle);
-                bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "new");
-            }
-        });
-
-        binding.ivBackArrow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
-
-        binding.ivClearText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isClearMain = true;
-                binding.etUserinput.setText("");
-                binding.ivNewTranslation.setVisibility(View.GONE);
-                binding.ivClearText.setVisibility(View.GONE);
-                binding.viewLine.setVisibility(View.GONE);
-                binding.linearTranslate.setVisibility(View.GONE);
-            }
-        });
-
-
-        binding.etUserinput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.e("beforeTextChanged", "beforeTextChanged: " + charSequence);
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.e("onTextChanged", "onTextChanged: " + charSequence);
-                if (charSequence.length() > 0) {
-                    binding.ivCopy.setVisibility(View.VISIBLE);
-                    binding.ivSpeaker.setVisibility(View.VISIBLE);
-                    binding.ivNewTranslation.setVisibility(View.VISIBLE);
-                    binding.ivClearText.setVisibility(View.VISIBLE);
-                } else {
-                    binding.ivCopy.setVisibility(View.INVISIBLE);
-                    binding.ivSpeaker.setVisibility(View.INVISIBLE);
-                    binding.ivNewTranslation.setVisibility(View.GONE);
-                    binding.ivClearText.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                Log.e("afterTextChanged", "afterTextChanged: " + editable.toString());
-            }
-        });
-
-
-        binding.ivNewTranslation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isClearMain = true;
-                binding.etUserinput.setText("");
-                binding.ivNewTranslation.setVisibility(View.GONE);
-                binding.ivClearText.setVisibility(View.GONE);
-                binding.linearTranslate.setVisibility(View.GONE);
-                binding.viewLine.setVisibility(View.GONE);
-            }
-        });
-
-        binding.imgbtnCopy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (binding.tvTranslatedtext.getText().toString().equals("")) {
-                    Toast.makeText(TranslateNewActivity.this, "No text found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setText(binding.tvTranslatedtext.getText().toString());
-                Toast.makeText(TranslateNewActivity.this, "Copied to clipboard", Toast.LENGTH_SHORT).show();
-            }
-        });
-        binding.shareImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String charSequence = binding.tvTranslatedtext.getText().toString();
-                if (charSequence.equals("")) {
-                    Toast.makeText(TranslateNewActivity.this, "No Text Found", Toast.LENGTH_SHORT).show();
-                } else {
-                    startActivity(Intent.createChooser(new Intent("android.intent.action.SEND").putExtra("android.intent.extra.TEXT", charSequence).setType("text/plain").putExtra("android.intent.extra.SUBJECT", "choose one"), "Share through"));
-                }
-            }
-        });
-        binding.volumeImg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                kprogresshud.setLabel("Text to speech").show();
-                if (binding.tvTranslatedtext.getText().toString().equals("")) {
-                    Toast.makeText(TranslateNewActivity.this, "No text detected", Toast.LENGTH_SHORT).show();
-                } else {
-                    txttospeech = new TextToSpeech(TranslateNewActivity.this, new TextToSpeech.OnInitListener() {
-                        @Override
-                        public void onInit(int i) {
-                            kprogresshud.dismiss();
-                            if (i == 0) {
-                                Locale locale = new Locale(lng2code);
-                                Log.d("text", "locale:: " + locale.getLanguage());
-                                int language = txttospeech.setLanguage(locale);
-                                Log.d("text", "result:: " + language);
-                                Log.d("text", binding.tvTranslatedtext.getText().toString());
-                                txttospeech.speak(binding.tvTranslatedtext.getText().toString(), 0, null, null);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-
-        binding.ivSpeaker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                kprogresshud.setLabel("Text to speech").show();
-                if (binding.etUserinput.getText().toString().equals("")) {
-                    Toast.makeText(TranslateNewActivity.this, "No text detected", Toast.LENGTH_SHORT).show();
-                } else {
-                    txttospeech = new TextToSpeech(TranslateNewActivity.this, new TextToSpeech.OnInitListener() {
-                        @Override
-                        public void onInit(int i) {
-                            kprogresshud.dismiss();
-                            if (i == 0) {
-                                Locale locale = new Locale(lng2code);
-                                Log.d("text", "locale:: " + locale.getLanguage());
-                                int language = txttospeech.setLanguage(locale);
-                                Log.d("text", "result:: " + language);
-                                Log.d("text", binding.etUserinput.getText().toString());
-                                txttospeech.speak(binding.etUserinput.getText().toString(), 0, null, null);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-
-
-        binding.ivCopy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (binding.etUserinput.getText().toString().equals("")) {
-                    Toast.makeText(TranslateNewActivity.this, "No text found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE)).setText(binding.tvTranslatedtext.getText().toString());
-                Toast.makeText(TranslateNewActivity.this, "Copied to clipboard", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        binding.ivTranslate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
-                    translateLanguage();
-                }
-            }
-        });
-
-    }
-
-    public void translateLanguage() {
-        is_btn_translate = true;
-        if (temp_downloadedlngs_list.size() == 0) {
-            Log.d("TAG", "onCreatexcxc: ");
-            BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(this);
-            Bundle bundle = new Bundle();
-            bundle.putString("langno", "1");
-            bundle.putString("from", "mainActivity");
-            bundle.putString("lan", lng2name);
-            bundle.putString("belong", "lan1");
-            bottomsheetFrag.setArguments(bundle);
-            bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-        } else if (!temp_downloadedlngs_list.contains(lng2name)) {
-            Log.d("TAG", "onCreatexcxc1: " + temp_downloadedlngs_list.size());
-            Log.d("TAG", "onCreatexcxc1: " + lng2name);
-            BottomsheetFrag bottomsheetFrag2 = new BottomsheetFrag(this);
-            Bundle bundle2 = new Bundle();
-            bundle2.putString("langno", "2");
-            bundle2.putString("from", "mainActivity");
-            bundle2.putString("lan", lng2name);
-            bundle2.putString("belong", "lan1");
-            bottomsheetFrag2.setArguments(bundle2);
-            bottomsheetFrag2.show(getSupportFragmentManager(), "TAG");
-        } else {
-            Log.e("aaaaaaaaa", "The ad was dismissed.");
-            TranslateWords(binding.etUserinput.getText().toString());
+        if (MainActivity.lang_no != null && BottomsheetFrag.languagepack != null && MainActivity.lang_no.equals("1")) {
+            tv_lang1.setText(BottomsheetFrag.languagepack);
+            BottomsheetFrag.languagepack = null;
+//            btn_mic1.setImageResource(BottomsheetFrag.iconlanguage);
+            MainActivity.getPref(context2).edit().putInt("iconlang1", BottomsheetFrag.iconlanguage).apply();
+        } else if (MainActivity.lang_no != null && BottomsheetFrag.languagepack != null && MainActivity.lang_no.equals(ExifInterface.GPS_MEASUREMENT_2D)) {
+            tv_lang2.setText(BottomsheetFrag.languagepack);
+            BottomsheetFrag.languagepack = null;
+//            btn_mic2.setImageResource(BottomsheetFrag.iconlanguage);
+            MainActivity.getPref(context2).edit().putInt("iconlang2", BottomsheetFrag.iconlanguage).apply();
         }
-    }
-
-    public void TranslateWords(String texttotranslate) {
-        lng1code = Chooselng1Code(lng1name);
-        lng2code = Chooselng2Code(lng2name);
-        Translation.getClient(new TranslatorOptions.Builder().setSourceLanguage(lng1code).setTargetLanguage(lng2code).build()).translate(texttotranslate).addOnSuccessListener(new OnSuccessListener() {
-            @Override
-            public void onSuccess(Object obj) {
-
-//                View currentFocus = getCurrentFocus();
-//                if (currentFocus != null) {
-//                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
-//                }
-                binding.tvTranslatedtext.setText(obj.toString());
-                binding.tvTranslatedtext.setMovementMethod(new ArrowKeyMovementMethod());
-                binding.linearTranslate.setAnimation(translatedcard_anim);
-                binding.linearTranslate.setVisibility(View.VISIBLE);
-
-                binding.viewLine.setVisibility(View.VISIBLE);
-                binding.ivNewTranslation.setVisibility(View.VISIBLE);
-
-                WordsHistoryTable wordsHistoryTable = new WordsHistoryTable();
-                wordsHistoryTable.setLanguage1(lng1name);
-                wordsHistoryTable.setLanguage2(lng2name);
-                wordsHistoryTable.setTexttotranslate(texttotranslate);
-                wordsHistoryTable.setTranslatedtext(obj.toString());
-                roomDB.downloadedlngs_dao().insert_lngs(wordsHistoryTable);
-
+        MainActivity.getPref(context2).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
+        MainActivity.getPref(context2).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
+        /*if (HistoryActivity.selectedchatname != null) {
+            Log.e("testingg", "onResume: saved chat name" + HistoryActivity.selectedchatname);
+            nochatanim_layout.setVisibility(View.GONE);
+            chatRecView.setVisibility(View.VISIBLE);
+            mics_layout.setVisibility(View.VISIBLE);
+            if (chatlist.size() == 0) {
+                chatlist = new ArrayList<>(roomDB.downloadedlngs_dao().specificchat(HistoryActivity.selectedchatname));
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(Exception exc) {
-//                kprogresshud.dismiss();
-                Log.e("faileddsd", "TranslateWords:failed to translate  " + exc);
-                Toast.makeText(TranslateNewActivity.this, "failed to translate", Toast.LENGTH_SHORT).show();
+            chatRecView.setLayoutManager(new LinearLayoutManager(context2));
+            ChatAdapter chat_Adapter = new ChatAdapter(context2, chatlist);
+            chat_adapter = chat_Adapter;
+            chatRecView.setAdapter(chat_Adapter);
+            if (chatlist.size() >= 2) {
+                chatRecView.scrollToPosition(chatlist.size() - 1);
             }
-        });
+        }*/
     }
-
 
     public static void setData(Context context) {
         downloadedlngs_list.clear();
         temp_downloadedlngs_list.clear();
+
         downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
+
         for (int i = 0; i < downloadedlngs_list.size(); i++) {
             temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
         }
@@ -401,12 +153,269 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         }
         tv_lang1.setText(lng1name);
         tv_lang2.setText(lng2name);
-        getPref(context).edit().putString("lng1name", lng1name).apply();
-        getPref(context).edit().putString("lng2name", lng2name).apply();
+        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString().substring(0, 1).toUpperCase() + tv_lang1.getText().toString().substring(1).toUpperCase()).apply();
+        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString().substring(0, 1).toUpperCase() + tv_lang2.getText().toString().substring(1).toUpperCase()).apply();
         getPref(context).edit().putInt("iconlang1", iconlang1).apply();
         getPref(context).edit().putInt("iconlang2", iconlang2).apply();
     }
 
+    @Override
+    public void onDownloadComplete(boolean isDownload) {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_chat);
+        Initialization();
+        context = this;
+
+    }
+
+    private void Initialization() {
+        roomDB = RoomDB.getRoomDBInstance(this);
+        chatRecView = (RecyclerView) findViewById(R.id.chatRecView);
+        nochatanim_layout = (ConstraintLayout) findViewById(R.id.nochatanim_layout);
+        mics_layout = (LinearLayout) findViewById(R.id.linearLayout);
+        btn_M1 = (ImageView) findViewById(R.id.mice_lang1);
+        btn_M2 = (ImageView) findViewById(R.id.mice_lang2);
+        tv_lang1 = (TextView) findViewById(R.id.tv_lang1);
+        tv_lang2 = (TextView) findViewById(R.id.tv_lang2);
+        btn_Select1 = (LinearLayout) findViewById(R.id.btn1);
+        btn_Select2 = (LinearLayout) findViewById(R.id.btn2);
+        back = findViewById(R.id.back);
+        btn_lng_transition = (ImageView) findViewById(R.id.img_lng_transition);
+        lng1name = MainActivity.getPref(this).getString("lng1name", "ENGLISH");
+        lng2name = MainActivity.getPref(this).getString("lng2name", "URDU");
+        iconlang1 = MainActivity.getPref(this).getInt("iconlang1", R.drawable.flg_english);
+        iconlang2 = MainActivity.getPref(this).getInt("iconlang2", R.drawable.flg_urdu);
+        tv_lang1.setText(lng1name);
+        tv_lang2.setText(lng2name);
+
+        btn_M1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.lng1name = MainActivity.getPref(ChatActivity.this).getString("lng1name", "ENGLISH");
+                MainActivity.lng1code = Chooselng1Code(MainActivity.lng1name);
+                MainActivity.lang_no = "1";
+
+                if (isNetworkConnected()) {
+                    if (!MainActivity.temp_downloadedlngs_list.contains(tv_lang1.getText().toString())) {
+                        Toast.makeText(ChatActivity.this, "Download " + tv_lang1.getText().toString(), Toast.LENGTH_SHORT).show();
+                        return;
+                    } else if (!MainActivity.temp_downloadedlngs_list.contains(tv_lang2.getText().toString())) {
+                        Toast.makeText(ChatActivity.this, "Download " + tv_lang2.getText().toString(), Toast.LENGTH_SHORT).show();
+                        return;
+                    } else {
+                        user = "user1";
+                        GetUserVoice(MainActivity.lng1code);
+                        return;
+                    }
+                }
+                Toast.makeText(ChatActivity.this, "Internet is needed for speech to text translation", Toast.LENGTH_SHORT).show();
+            }
+        });
+        btn_M2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.lng2code = Chooselng2Code(MainActivity.lng2name);
+                MainActivity.lang_no = ExifInterface.GPS_MEASUREMENT_2D;
+                if (isNetworkConnected()) {
+                    if (!MainActivity.temp_downloadedlngs_list.contains(lng1name)) {
+                        Toast.makeText(ChatActivity.this, "Download " + tv_lang1.getText().toString(), Toast.LENGTH_SHORT).show();
+                        return;
+                    } else if (!MainActivity.temp_downloadedlngs_list.contains(lng2name)) {
+                        Toast.makeText(ChatActivity.this, "Download " + tv_lang2.getText().toString(), Toast.LENGTH_SHORT).show();
+                        return;
+                    } else {
+                        user = "user2";
+                        GetUserVoice(MainActivity.lng2code);
+                        return;
+                    }
+                }
+                Toast.makeText(ChatActivity.this, "Internet is needed for speech to text translation", Toast.LENGTH_SHORT).show();
+            }
+        });
+        btn_Select1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                lang_no = "1";
+                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "chat");
+                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(ChatActivity.this);
+                Bundle bundle = new Bundle();
+                bundle.putString("langno", "1");
+                bundle.putString("from", "chatActivity");
+                bottomsheetFrag.setArguments(bundle);
+                bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
+            }
+        });
+        btn_Select2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "chat");
+                lang_no = "2";
+                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(ChatActivity.this);
+                Bundle bundle = new Bundle();
+                bundle.putString("langno", "2");
+                bundle.putString("from", "chatActivity");
+                bottomsheetFrag.setArguments(bundle);
+                bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
+            }
+        });
+        tv_lang2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                lang_no = "2";
+                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(ChatActivity.this);
+                Bundle bundle = new Bundle();
+                bundle.putString("langno", "2");
+                bundle.putString("from", "chatActivity");
+                bottomsheetFrag.setArguments(bundle);
+                bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
+            }
+        });
+        btn_lng_transition.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RotateAnimation rotateAnimation = new RotateAnimation(0.0f, 180.0f, 1, 0.5f, 1, 0.5f);
+                rotateAnimation.setDuration(500L);
+                btn_lng_transition.startAnimation(rotateAnimation);
+                lng1name = MainActivity.getPref(ChatActivity.this).getString("lng1name", "ENGLISH");
+                lng2name = MainActivity.getPref(ChatActivity.this).getString("lng2name", "URDU");
+                tv_lang1.setText(lng2name);
+                tv_lang2.setText(lng1name);
+                iconlang2 = MainActivity.getPref(ChatActivity.this).getInt("iconlang1", R.drawable.flg_english);
+                iconlang1 = MainActivity.getPref(ChatActivity.this).getInt("iconlang2", R.drawable.flg_urdu);
+                btn_mic1.setImageResource(iconlang1);
+                btn_mic2.setImageResource(iconlang2);
+                MainActivity.getPref(ChatActivity.this).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
+                MainActivity.getPref(ChatActivity.this).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
+                lng1name = MainActivity.getPref(ChatActivity.this).getString("lng1name", "ENGLISH");
+                lng2name = MainActivity.getPref(ChatActivity.this).getString("lng2name", "URDU");
+            }
+        });
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+//        chattoolbar_layout.inflateMenu(R.menu.chat_menu);
+       /* chattoolbar_layout.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.menu_savechat) {
+                    mics_layout.setVisibility(View.GONE);
+                    SaveChatdialog();
+                    return true;
+                } else if (menuItem.getItemId() == R.id.menu_clearchat) {
+                    if (chatlist.size() > 0) {
+                        chatlist.clear();
+                        mics_layout.setVisibility(View.VISIBLE);
+                        chatRecView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
+                        ChatAdapter chat_Adapter = new ChatAdapter(ChatActivity.this, chatlist);
+                        chat_adapter = chat_Adapter;
+                        chatRecView.setAdapter(chat_Adapter);
+                        return true;
+                    }
+                    return true;
+                } else {
+                    throw new IllegalStateException("Unexpected value: " + menuItem.getItemId());
+                }
+            }
+        });*/
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
+    }
+
+    private void GetUserVoice(String lng) {
+        Intent intent = new Intent("android.speech.action.RECOGNIZE_SPEECH");
+        intent.putExtra("android.speech.extra.LANGUAGE_MODEL", "free_form");
+        intent.putExtra("android.speech.extra.LANGUAGE", lng);
+        intent.putExtra("android.speech.extra.PROMPT", "Speak Something");
+        try {
+            intentforvoicetotext.launch(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.e("", "GetUserVoice: " + e.getMessage());
+        }
+    }
+
+    public void translateText(ActivityResult activityResult) {
+        if (activityResult.getResultCode() == -1 && activityResult.getData() != null) {
+            nochatanim_layout.setVisibility(View.GONE);
+            chatRecView.setVisibility(View.VISIBLE);
+            texttotranslate = String.valueOf(activityResult.getData().getStringArrayListExtra("android.speech.extra.RESULTS").get(0));
+            lngslist.addAll(Arrays.asList(roomDB.downloadedlngs_dao().selectalllngs()));
+            for (int i = 0; i < lngslist.size(); i++) {
+                temp_downloadedlngs_list.add(lngslist.get(i).getLanguage1());
+                temp_downloadedlngs_list.add(lngslist.get(i).getLanguage2());
+            }
+            if (temp_downloadedlngs_list.contains(tv_lang1.getText().toString()) && temp_downloadedlngs_list.contains(tv_lang2.getText().toString())) {
+                TranslatingText(texttotranslate, user);
+                return;
+            }
+            return;
+        }
+        nochatanim_layout.setVisibility(View.VISIBLE);
+        chatRecView.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        MainActivity.from = "fromChat";
+    }
+
+    private void TranslatingText(final String texttotranslate, final String user) {
+        MainActivity.lng1code = Chooselng1Code(lng1name);
+        MainActivity.lng2code = Chooselng2Code(lng2name);
+        hud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).setLabel("Translating...").setCancellable(false).show();
+        if (user.equals("user1")) {
+            options = new TranslatorOptions.Builder().setSourceLanguage(MainActivity.lng1code).setTargetLanguage(MainActivity.lng2code).build();
+        } else if (user.equals("user2")) {
+            options = new TranslatorOptions.Builder().setSourceLanguage(MainActivity.lng2code).setTargetLanguage(MainActivity.lng1code).build();
+        }
+        Translator client = Translation.getClient(options);
+        translator = client;
+        client.translate(texttotranslate).addOnSuccessListener(new OnSuccessListener() {
+            @Override
+            public void onSuccess(@NonNull Object o) {
+                hud.dismiss();
+                try {
+                    translatedtext1 = (String) o;
+                    ChatTable chat_Table = new ChatTable(lng1name, lng2name, texttotranslate, translatedtext1, user, null);
+                    chatobj = chat_Table;
+                    chatlist.add(chat_Table);
+                    chatRecView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
+                    ChatAdapter chat_Adapter = new ChatAdapter(ChatActivity.this, chatlist);
+                    chat_adapter = chat_Adapter;
+                    chatRecView.setAdapter(chat_Adapter);
+                    if (chatlist.size() >= 2) {
+                        chatRecView.scrollToPosition(chatlist.size() - 1);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(Exception exc) {
+                Toast.makeText(ChatActivity.this, "Error:Failed to translate text", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setChatData(this);
+    }
 
     private String Chooselng1Code(String language1name) {
         language1name.hashCode();
@@ -492,7 +501,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
                 break;
             case -1090048133:
                 if (language1name.equals("SWEDISH")) {
-                    c = '\r';
+                    c = '\n';
                     break;
                 }
                 break;
@@ -1370,24 +1379,5 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
             case ':':
                 return TranslateLanguage.AFRIKAANS;
         }
-    }
-
-    @Override
-    public void onDownloadComplete(boolean isDownload) {
-        if (is_btn_translate && isDownload) {
-            Is_btn_translate_auto_click = true;
-//            btn_translate.performClick();
-            is_btn_translate = false;
-        }
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("clear", isClearMain);
-        setResult(RESULT_OK, resultIntent);
-        finish();
-        super.onBackPressed();
     }
 }
