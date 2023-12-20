@@ -117,37 +117,12 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
         }
 
-        binding.etUserinput.setOnTouchListener(new View.OnTouchListener() {
-
-            public boolean onTouch(View v, MotionEvent event) {
-                if (binding.etUserinput.hasFocus()) {
-                    v.getParent().requestDisallowInterceptTouchEvent(true);
-                    switch (event.getAction() & MotionEvent.ACTION_MASK){
-                        case MotionEvent.ACTION_SCROLL:
-                            v.getParent().requestDisallowInterceptTouchEvent(false);
-                            return true;
-                    }
-                }
-                return false;
-            }
-        });
-
         Log.e("dgdfgdgf", "onCreate: " + temp_downloadedlngs_list.size());
         Log.e("dgdfgdgf", "downloadd: " + downloadedlngs_list.size());
         binding.imgPaste.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 pasteTextFromClipboard();
-            }
-        });
-        binding.ivNewTranslation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                binding.ivNewTranslation.setVisibility(View.GONE);
-                binding.linearCameraMic.setVisibility(View.VISIBLE);
-                binding.imgPaste.setVisibility(View.VISIBLE);
-                binding.etUserinput.setText("");
-
             }
         });
 
@@ -161,11 +136,16 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         Log.e("flow", "onCreate:size od downloaded and temp list " + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
         lng1name = getPref(this).getString("lng1name", "English");
         lng2name = getPref(this).getString("lng2name", "French");
-        String upperString = lng1name.substring(0, 1).toUpperCase() + lng1name.substring(1).toLowerCase();
-        String upperString1 = lng2name.substring(0, 1).toUpperCase() + lng2name.substring(1).toLowerCase();
-        binding.tvLang1.setText(upperString);
-        binding.tvLang2.setText(upperString1);
+        binding.tvLang1.setText(lng1name);
+        binding.tvLang2.setText(lng2name);
         binding.etUserinput.setText("");
+
+        binding.conversation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ChatActivity.class));
+            }
+        });
         binding.linearLeftLang.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -876,34 +856,15 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         }
     }
 
-
-    ActivityResultLauncher<Intent> cameraActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == Activity.RESULT_OK) {
-
-
-            }
-        }
-    });
-
-
-    public interface OnKeyboardVisibilityListener {
-        void onVisibilityChanged(boolean isVisible);
-    }
-
     private void pasteTextFromClipboard() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboardManager != null && clipboardManager.hasPrimaryClip()) {
             ClipData clipData = clipboardManager.getPrimaryClip();
             if (clipData != null && clipData.getItemCount() > 0) {
                 ClipData.Item item = clipData.getItemAt(0);
-                pasteText = item.getText();
+                CharSequence pasteText = item.getText();
                 if (pasteText != null) {
                     binding.etUserinput.setText(pasteText);
-                    if (!binding.etUserinput.getText().toString().isEmpty()) {
-                        binding.ivClearText.setVisibility(View.VISIBLE);
-                    }
                 }
             }
         }
@@ -936,14 +897,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
                 lng2name = BottomsheetFrag.languagepack;
             }
         }
-        String upperString = lng1name.substring(0, 1).toUpperCase() + lng1name.substring(1).toLowerCase();
-        String upperString1 = lng2name.substring(0, 1).toUpperCase() + lng2name.substring(1).toLowerCase();
-        tv_lang1.setText(upperString);
-        tv_lang2.setText(upperString1);
-
-
-        getPref(context).edit().putString("lng1name", lng1name).apply();
-        getPref(context).edit().putString("lng2name", lng2name).apply();
+        tv_lang1.setText(lng1name);
+        tv_lang2.setText(lng2name);
+        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
+        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
         getPref(context).edit().putInt("iconlang1", iconlang1).apply();
         getPref(context).edit().putInt("iconlang2", iconlang2).apply();
     }
@@ -967,19 +924,5 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         if (kprogresshud.isShowing()) {
             kprogresshud.dismiss();
         }
-        if (!CameraPic.isEmpty()) {
-            MediaScannerConnection.scanFile(this, new String[]{CameraPic}, null, new MediaScannerConnection.OnScanCompletedListener() {
-                @Override // android.media.MediaScannerConnection.OnScanCompletedListener
-                public void onScanCompleted(String path, Uri uri) {
-                    Log.i("MediaScannerConnection", "Scanned " + path);
-                    Log.i("MediaScannerConnection", "Uri: " + uri);
-                    MainActivity.CameraPic = "";
-//                    CropImage.activity(uri).start(MainActivity.this);
-                }
-            });
-        }
-
     }
-
-
 }
