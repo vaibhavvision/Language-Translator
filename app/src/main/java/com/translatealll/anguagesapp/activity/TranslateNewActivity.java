@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -1376,7 +1377,6 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
     public void onDownloadComplete(boolean isDownload) {
         if (is_btn_translate && isDownload) {
             Is_btn_translate_auto_click = true;
-//            btn_translate.performClick();
             is_btn_translate = false;
         }
     }
