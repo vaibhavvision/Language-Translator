@@ -25,7 +25,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     private final ArrayList<ChatTable> chat_list;
     Context context;
     TextToSpeech txttospeech;
-    String lng2code;
 
     public ChatAdapter(Context context, ArrayList<ChatTable> chat_list) {
         this.context = context;
@@ -100,13 +99,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         }
     }
 
-    public void onDestroy() {
-        if (txttospeech != null) {
-            txttospeech.stop();
-            txttospeech.shutdown();
-        }
-
-    }
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
         TextView tvSend1, tvSend2;

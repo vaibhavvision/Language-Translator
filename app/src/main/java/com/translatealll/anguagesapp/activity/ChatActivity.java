@@ -11,12 +11,16 @@ import static com.translatealll.anguagesapp.activity.MainActivity.temp_downloade
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.RotateAnimation;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,6 +31,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -58,7 +63,6 @@ import kotlin.text.Typography;
 
 
 public class ChatActivity extends AppCompatActivity implements BottomSheetFragclicks {
-    static final boolean assertionsDisabled = false;
     public static ImageView btn_M1;
     public static ImageView btn_M2;
     public static ImageView btn_lng_transition;
@@ -66,6 +70,7 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
     public static ImageView btn_mic2;
     public static RecyclerView chatRecView;
     public static ChatAdapter chat_adapter;
+
     public static Context context;
     static ArrayList<ChatTable> chatlist = new ArrayList<>();
     static LinearLayout mics_layout;
@@ -79,12 +84,13 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
     ChatTable chatobj;
     KProgressHUD hud;
     TranslatorOptions options;
+
     String texttotranslate;
     String translatedtext1;
     Translator translator;
-    ImageView img_lng_transition;
     String user;
     ImageView back;
+    Toolbar chattoolbar_layout;
     ArrayList<WordsHistoryTable> lngslist = new ArrayList<>();
     int counter = 0;
     ActivityResultLauncher<Intent> intentforvoicetotext = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback() {
@@ -104,17 +110,15 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
         if (MainActivity.lang_no != null && BottomsheetFrag.languagepack != null && MainActivity.lang_no.equals("1")) {
             tv_lang1.setText(BottomsheetFrag.languagepack);
             BottomsheetFrag.languagepack = null;
-//            btn_mic1.setImageResource(BottomsheetFrag.iconlanguage);
             MainActivity.getPref(context2).edit().putInt("iconlang1", BottomsheetFrag.iconlanguage).apply();
         } else if (MainActivity.lang_no != null && BottomsheetFrag.languagepack != null && MainActivity.lang_no.equals(ExifInterface.GPS_MEASUREMENT_2D)) {
             tv_lang2.setText(BottomsheetFrag.languagepack);
             BottomsheetFrag.languagepack = null;
-//            btn_mic2.setImageResource(BottomsheetFrag.iconlanguage);
             MainActivity.getPref(context2).edit().putInt("iconlang2", BottomsheetFrag.iconlanguage).apply();
         }
         MainActivity.getPref(context2).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
         MainActivity.getPref(context2).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
-        /*if (HistoryActivity.selectedchatname != null) {
+        if (HistoryActivity.selectedchatname != null) {
             Log.e("testingg", "onResume: saved chat name" + HistoryActivity.selectedchatname);
             nochatanim_layout.setVisibility(View.GONE);
             chatRecView.setVisibility(View.VISIBLE);
@@ -129,7 +133,7 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
             if (chatlist.size() >= 2) {
                 chatRecView.scrollToPosition(chatlist.size() - 1);
             }
-        }*/
+        }
     }
 
     public static void setData(Context context) {
@@ -169,7 +173,6 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
         setContentView(R.layout.activity_chat);
         Initialization();
         context = this;
-
     }
 
     private void Initialization() {
@@ -184,6 +187,7 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
         btn_Select1 = (LinearLayout) findViewById(R.id.btn1);
         btn_Select2 = (LinearLayout) findViewById(R.id.btn2);
         back = findViewById(R.id.back);
+        chattoolbar_layout = (Toolbar) findViewById(R.id.toolbar);
         btn_lng_transition = (ImageView) findViewById(R.id.img_lng_transition);
         lng1name = MainActivity.getPref(this).getString("lng1name", "ENGLISH");
         lng2name = MainActivity.getPref(this).getString("lng2name", "URDU");
@@ -191,7 +195,6 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
         iconlang2 = MainActivity.getPref(this).getInt("iconlang2", R.drawable.flg_urdu);
         tv_lang1.setText(lng1name);
         tv_lang2.setText(lng2name);
-
         btn_M1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -300,8 +303,10 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
                 onBackPressed();
             }
         });
-//        chattoolbar_layout.inflateMenu(R.menu.chat_menu);
-       /* chattoolbar_layout.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+
+
+        chattoolbar_layout.inflateMenu(R.menu.chat_menu);
+        chattoolbar_layout.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.menu_savechat) {
@@ -323,8 +328,53 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
                     throw new IllegalStateException("Unexpected value: " + menuItem.getItemId());
                 }
             }
-        });*/
+        });
     }
+
+    private void SaveChatdialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View inflate = getLayoutInflater().inflate(R.layout.savechat_dialog, (ViewGroup) null);
+        builder.setView(inflate);
+        final EditText editText = (EditText) inflate.findViewById(R.id.et_chatname);
+        builder.setMessage("Enter Chat Name").setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                lambda$SaveChatdialog$11(editText, dialogInterface, i);
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ChatActivity.mics_layout.setVisibility(View.VISIBLE);
+            }
+        });
+        AlertDialog create = builder.create();
+        create.setCanceledOnTouchOutside(false);
+        create.show();
+    }
+
+
+    public void lambda$SaveChatdialog$11(EditText editText, DialogInterface dialogInterface, int i) {
+        String obj = editText.getText().toString();
+        chatname = obj;
+        if (obj.equals("")) {
+            Toast.makeText(this, "Chat Name cannot be empty", Toast.LENGTH_SHORT).show();
+            mics_layout.setVisibility(View.VISIBLE);
+        } else if (chatlist.size() > 0) {
+            for (int i2 = 0; i2 < chatlist.size(); i2++) {
+                chatobj = new ChatTable(chatlist.get(i2).getLang1(), chatlist.get(i2).getLang2(), chatlist.get(i2).getTexttotranslate(), chatlist.get(i2).getTranslatedtext(), chatlist.get(i2).getUser(), chatname);
+                roomDB.downloadedlngs_dao().insert_chat(chatobj);
+                Log.e("chatdata", "SaveChatdialog: " + chatlist.size() + chatlist.get(i2).getTexttotranslate());
+            }
+            Toast.makeText(this, "Chat Saved", Toast.LENGTH_SHORT).show();
+            chatlist.clear();
+            chat_adapter.notifyDataSetChanged();
+            mics_layout.setVisibility(View.VISIBLE);
+        } else {
+            mics_layout.setVisibility(View.VISIBLE);
+            Toast.makeText(this, "Chat can not be empty", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private boolean isNetworkConnected() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

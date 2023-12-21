@@ -7,11 +7,11 @@
     android:background="@color/white"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginHorizontal="@dimen/_10sdp"
         android:layout_marginVertical="@dimen/_10sdp"
         android:orientation="horizontal">
 
@@ -36,7 +36,7 @@
             android:textColor="@color/black"
             android:textSize="@dimen/_16sdp" />
 
-    </RelativeLayout>
+    </androidx.appcompat.widget.Toolbar>
 
     <LinearLayout
         android:id="@+id/linearLayout"

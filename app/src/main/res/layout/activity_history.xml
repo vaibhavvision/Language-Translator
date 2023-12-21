@@ -42,33 +42,69 @@
     <LinearLayout
         android:id="@+id/cl_options"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_50sdp"
+        android:layout_height="wrap_content"
         android:elevation="5dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
         app:layout_constraintTop_toBottomOf="@+id/historytoolbar_layout">
 
         <TextView
             android:id="@+id/btn_top_translator"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_40sdp"
-            android:background="@drawable/bg_history_selected"
+            android:background="@drawable/bg_lang_1"
             android:fontFamily="@font/lato_semi_bold"
             android:gravity="center"
             android:layout_weight="1"
+            android:layout_marginEnd="@dimen/_5sdp"
             android:text="Translation"
             android:textColor="@color/white"
-            android:textSize="@dimen/_12sdp"/>
+            android:textSize="@dimen/_14ssp"/>
 
         <TextView
             android:id="@+id/btn_top_saved_chat"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_40sdp"
-            android:background="@drawable/bg_history_unselect"
-            android:elevation="3dp"
+            android:background="@drawable/et_border_translate_shape"
             android:fontFamily="@font/lato_semi_bold"
             android:gravity="center"
             android:text="Chat"
+            android:layout_marginStart="@dimen/_5sdp"
             android:layout_weight="1"
             android:textColor="@color/black"
-            android:textSize="@dimen/_12sdp" />
+            android:textSize="@dimen/_14ssp" />
     </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/historyrecview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/_7sdp"
+        android:background="@android:color/transparent"
+        android:visibility="visible"
+        android:divider="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cl_options" />
+
+    <TextView
+        android:id="@+id/tv_nohistory"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fontFamily="@font/lato_semi_bold"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="@dimen/_7sdp"
+        android:text="No History Found"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </LinearLayout>

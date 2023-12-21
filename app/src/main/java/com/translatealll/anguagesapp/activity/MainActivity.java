@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -20,11 +21,13 @@ import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +37,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.Text;
@@ -65,7 +69,6 @@ import java.util.List;
 import kotlin.text.Typography;
 
 public class MainActivity extends AppCompatActivity implements BottomSheetFragclicks {
-    public static String CameraPic = "";
 
     public static int iconlang1;
     public static int iconlang2;
@@ -89,11 +92,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public static TextView tvLanguageDownload;
     public static TextView tv_lang1;
     public static TextView tv_lang2;
-
-    public static boolean isFirstSpeacker = false;
+    DrawerLayout mDrawerLayout;
+    ImageView menu;
 
     ActivityResultLauncher<Intent> activityResultLauncher;
-    CharSequence pasteText;
 
     String[] permission;
     public static final int CAMERA_PERM_CODE = 101;
@@ -105,9 +107,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
          bitmap = (Bitmap) getIntent().getParcelableExtra("imageCrop");
-
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         tv_lang1 = findViewById(R.id.tv_lang1);
         tv_lang2 = findViewById(R.id.tv_lang2);
+        menu = findViewById(R.id.menu);
         roomDB = RoomDB.getRoomDBInstance(this);
         temp_downloadedlngs_list.clear();
         downloadedlngs_list.clear();
@@ -126,6 +129,12 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             }
         });
 
+        binding.menu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawerLayout.openDrawer(Gravity.LEFT);
+            }
+        });
         binding.etUserinput.setInputType(InputType.TYPE_CLASS_TEXT);
         binding.etUserinput.requestFocus();
         InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -144,6 +153,12 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ChatActivity.class));
+            }
+        });
+        binding.history.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,HistoryActivity.class));
             }
         });
         binding.linearLeftLang.setOnClickListener(new View.OnClickListener() {

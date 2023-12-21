@@ -265,7 +265,7 @@ public final class DownloadedlngsDaoImpl implements Downloadedlngs_dao {
         SupportSQLiteStatement acquire = __preparedStmtOfDelete.acquire();
         if (item == null) {
             acquire.bindNull(1);
-        } else {
+        } if(item == null) {
             acquire.bindString(1, item);
         }
         __db.beginTransaction();
@@ -390,7 +390,8 @@ public final class DownloadedlngsDaoImpl implements Downloadedlngs_dao {
         @SuppressLint("RestrictedApi") RoomSQLiteQuery acquire = RoomSQLiteQuery.acquire("SELECT * FROM Chat_table WHERE chatname LIKE ?", 1);
         if (chatname == null) {
             acquire.bindNull(1);
-        } else {
+        }
+        if (chatname == chatname) {
             acquire.bindString(1, chatname);
         }
         __db.assertNotSuspendingTransaction();
