@@ -3,7 +3,9 @@
     <style name="Base.Theme.TranslateAllLanguagesApp" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-        <item name="android:statusBarColor">#6B2FE0</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+
     </style>
 
     <style name="Theme.TranslateAllLanguagesApp" parent="Base.Theme.TranslateAllLanguagesApp" />

@@ -7,5 +7,7 @@
     <color name="purple_color">#6B2FE0</color>
     <color name="grey_bg">#ededed</color>
     <color name="transparent">#00000000</color>
+    <color name="phasettitlecolor">#2c90a7f3</color>
+    <color name="blue">#4e74f1</color>
 
 </resources>

@@ -272,29 +272,10 @@
 
             <include layout="@layout/nav_header" />
 
-            <LinearLayout
-                android:id="@+id/btnrate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
 
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="@dimen/_10sdp"
-                    android:src="@drawable/ic_sellang" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:fontFamily="@font/lato_medium"
-                    android:text="Select Language"
-                    android:textSize="@dimen/_14sdp" />
-            </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/btncontact"
+                android:id="@+id/btnConversation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
@@ -315,7 +296,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/btnprip"
+                android:id="@+id/btnrate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">

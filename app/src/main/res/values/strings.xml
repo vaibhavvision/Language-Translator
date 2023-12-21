@@ -7,4 +7,6 @@
     <string name="title1">Translation Text</string>
     <string name="dec1">Easily translate long or short passages of text\nfrom any language into the target language\nin just a few seconds.</string>
     <string name="txtletsstrat">Let’s Start</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

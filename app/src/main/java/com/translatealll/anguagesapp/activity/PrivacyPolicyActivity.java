@@ -13,7 +13,6 @@ import com.translatealll.anguagesapp.R;
 
 public class PrivacyPolicyActivity extends AppCompatActivity {
 
-
     WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
