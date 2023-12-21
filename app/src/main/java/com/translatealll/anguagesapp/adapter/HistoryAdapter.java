@@ -2,19 +2,15 @@ package com.translatealll.anguagesapp.adapter;
 
 
 import android.annotation.SuppressLint;
-import android.content.ClipboardManager;
+import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.graphics.drawable.BitmapDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.translatealll.anguagesapp.R;
@@ -48,6 +44,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
 
     @Override
     public void onBindViewHolder(Historyviewholder holder, @SuppressLint("RecyclerView") int position) {
+
         if (this.condition.equals("savedchat")) {
             holder.tv_text2.setPadding(0, 10, 0, 0);
             holder.tv_text2.setTextSize(15.0f);
@@ -63,44 +60,47 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
 
 
             holder.btn_more.setOnClickListener(new View.OnClickListener() {
+                @SuppressLint("MissingInflatedId")
                 @Override
                 public void onClick(View view) {
 
-                    LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    View popup = layoutInflater.inflate(R.layout.popup_delete, null);
+                    final Dialog dialog = new Dialog(context, R.style.WideDialog100);
+                    dialog.setContentView(R.layout.popup_delete);
 
-                    PopupWindow popupWindow = new PopupWindow(
-                            popup,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT);
-                    popupWindow.setOutsideTouchable(true);
-                    popupWindow.showAsDropDown(view);
+                    TextView itDeleteee = dialog.findViewById(R.id.itdeleteee);
 
-                    popup.findViewById(R.id.itdeleteee).setOnClickListener(new View.OnClickListener() {
+                    itDeleteee.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            new AlertDialog.Builder(context).setTitle("Delete").setMessage("Delete Chat?").setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+
+                            final Dialog dialog1 = new Dialog(context, R.style.WideDialog200);
+                            dialog1.setContentView(R.layout.layout_delete);
+                            Button btnDelete = dialog1.findViewById(R.id.btnDelete);
+                            Button btnCancel = dialog1.findViewById(R.id.btnCancel);
+                            btnDelete.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int i2) {
+                                public void onClick(View v) {
                                     RoomDB roomDBInstance = RoomDB.getRoomDBInstance(context);
                                     roomDB = roomDBInstance;
                                     roomDBInstance.downloadedlngs_dao().delete(chatlist.get(position));
                                     ArrayList<String> arrayList = chatlist;
                                     arrayList.remove(arrayList.get(position));
-                                    dialogInterface.dismiss();
                                     notifyDataSetChanged();
-                                    popupWindow.dismiss();
+                                    dialog1.dismiss();
+                                }
+                            });
 
-                                }
-                            }).setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            btnCancel.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int i2) {
-                                    dialogInterface.dismiss();
-                                    popupWindow.dismiss();
+                                public void onClick(View v) {
+                                    dialog1.dismiss();
                                 }
-                            }).create().show();
+                            });
+                            dialog1.show();
+                            dialog.dismiss();
                         }
                     });
+                    dialog.show();
                 }
             });
         } else if (condition.equals("history")) {
@@ -109,51 +109,52 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
             holder.btn_more.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    Dialog dialog = new Dialog(context, R.style.WideDialog100);
+                    dialog.setContentView(R.layout.popup_save);
 
-                    LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                        View popup = layoutInflater.inflate(R.layout.popup_save, null);
+                    TextView itDelete = dialog.findViewById(R.id.itdelete);
+                    TextView itCopy = dialog.findViewById(R.id.itcopy);
 
-                    PopupWindow popupWindow = new PopupWindow(
-                            popup,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT);
-                    popupWindow.setBackgroundDrawable(new BitmapDrawable());
-                    popupWindow.setOutsideTouchable(true);
-                    popupWindow.showAsDropDown(view);
-                    popup.findViewById(R.id.itdelete).setOnClickListener(new View.OnClickListener() {
+                    itDelete.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            new AlertDialog.Builder(context).setTitle("Delete").setMessage("Delete word?").setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            final Dialog dialog1 = new Dialog(context, R.style.WideDialog200);
+                            dialog1.setContentView(R.layout.layout_delete);
+                            Button btnDelete = dialog1.findViewById(R.id.btnDelete);
+                            Button btnCancel = dialog1.findViewById(R.id.btnCancel);
+                            btnDelete.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int i2) {
+                                public void onClick(View v) {
                                     RoomDB roomDBInstance = RoomDB.getRoomDBInstance(context);
                                     roomDB = roomDBInstance;
                                     roomDBInstance.downloadedlngs_dao().deleteword(wordslist.get(position));
                                     wordslist.remove(position);
                                     notifyDataSetChanged();
-                                    dialogInterface.dismiss();
-                                    popupWindow.dismiss();
-
+                                    dialog1.dismiss();
                                 }
-                            }).setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            });
+
+                            btnCancel.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialogInterface, int i2) {
-                                    dialogInterface.dismiss();
-                                    popupWindow.dismiss();
-
+                                public void onClick(View v) {
+                                    dialog1.dismiss();
                                 }
-                            }).create().show();
+                            });
+                            dialog1.show();
+                            dialog.dismiss();
                         }
                     });
 
-                    popup.findViewById(R.id.itcopy).setOnClickListener(new View.OnClickListener() {
+                    itCopy.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            ((ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setText(holder.tv_text1.getText().toString() + "\n" + holder.tv_text2.getText().toString());
-                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show();
-                            popupWindow.dismiss();
+                            // Handle Copy action
+                            dialog.dismiss();
                         }
                     });
+
+                    dialog.show();
+
                 }
             });
         }

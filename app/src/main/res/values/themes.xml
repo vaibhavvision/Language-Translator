@@ -3,7 +3,27 @@
     <style name="Base.Theme.TranslateAllLanguagesApp" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">#6B2FE0</item>
     </style>
 
     <style name="Theme.TranslateAllLanguagesApp" parent="Base.Theme.TranslateAllLanguagesApp" />
+
+    <style name="CustomBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
+
+    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="WideDialog100" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowMinWidthMajor">50%</item>
+        <item name="android:windowMinWidthMinor">50%</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <style name="WideDialog200" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowMinWidthMajor">70%</item>
+        <item name="android:windowMinWidthMinor">70%</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
 </resources>

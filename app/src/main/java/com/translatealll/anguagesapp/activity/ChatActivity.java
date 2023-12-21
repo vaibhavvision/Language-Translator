@@ -9,6 +9,7 @@ import static com.translatealll.anguagesapp.activity.MainActivity.lng1name;
 import static com.translatealll.anguagesapp.activity.MainActivity.lng2name;
 import static com.translatealll.anguagesapp.activity.MainActivity.temp_downloadedlngs_list;
 
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,10 +17,10 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -187,7 +188,6 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
         btn_Select1 = (LinearLayout) findViewById(R.id.btn1);
         btn_Select2 = (LinearLayout) findViewById(R.id.btn2);
         back = findViewById(R.id.back);
-        chattoolbar_layout = (Toolbar) findViewById(R.id.toolbar);
         btn_lng_transition = (ImageView) findViewById(R.id.img_lng_transition);
         lng1name = MainActivity.getPref(this).getString("lng1name", "ENGLISH");
         lng2name = MainActivity.getPref(this).getString("lng2name", "URDU");
@@ -277,6 +277,41 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
             }
         });
+        findViewById(R.id.btnmore).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Dialog dialog = new Dialog(context, R.style.WideDialog100);
+                dialog.setContentView(R.layout.popup_savechat);
+
+                TextView btnSaveChat = dialog.findViewById(R.id.btnSaveChat);
+                TextView btnClearChat = dialog.findViewById(R.id.btnClearChat);
+
+                btnSaveChat.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        chat();
+                        dialog.dismiss();
+                    }
+                });
+
+                btnClearChat.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (chatlist.size() > 0) {
+                            chatlist.clear();
+                            mics_layout.setVisibility(View.VISIBLE);
+                            chatRecView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
+                            ChatAdapter chat_Adapter = new ChatAdapter(ChatActivity.this, chatlist);
+                            chat_adapter = chat_Adapter;
+                            chatRecView.setAdapter(chat_Adapter);
+                        }
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
+            }
+        });
         btn_lng_transition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -289,8 +324,6 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
                 tv_lang2.setText(lng1name);
                 iconlang2 = MainActivity.getPref(ChatActivity.this).getInt("iconlang1", R.drawable.flg_english);
                 iconlang1 = MainActivity.getPref(ChatActivity.this).getInt("iconlang2", R.drawable.flg_urdu);
-                btn_mic1.setImageResource(iconlang1);
-                btn_mic2.setImageResource(iconlang2);
                 MainActivity.getPref(ChatActivity.this).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
                 MainActivity.getPref(ChatActivity.this).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
                 lng1name = MainActivity.getPref(ChatActivity.this).getString("lng1name", "ENGLISH");
@@ -303,58 +336,39 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
                 onBackPressed();
             }
         });
-
-
-        chattoolbar_layout.inflateMenu(R.menu.chat_menu);
-        chattoolbar_layout.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.menu_savechat) {
-                    mics_layout.setVisibility(View.GONE);
-                    SaveChatdialog();
-                    return true;
-                } else if (menuItem.getItemId() == R.id.menu_clearchat) {
-                    if (chatlist.size() > 0) {
-                        chatlist.clear();
-                        mics_layout.setVisibility(View.VISIBLE);
-                        chatRecView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
-                        ChatAdapter chat_Adapter = new ChatAdapter(ChatActivity.this, chatlist);
-                        chat_adapter = chat_Adapter;
-                        chatRecView.setAdapter(chat_Adapter);
-                        return true;
-                    }
-                    return true;
-                } else {
-                    throw new IllegalStateException("Unexpected value: " + menuItem.getItemId());
-                }
-            }
-        });
     }
 
-    private void SaveChatdialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View inflate = getLayoutInflater().inflate(R.layout.savechat_dialog, (ViewGroup) null);
-        builder.setView(inflate);
-        final EditText editText = (EditText) inflate.findViewById(R.id.et_chatname);
-        builder.setMessage("Enter Chat Name").setPositiveButton("Done", new DialogInterface.OnClickListener() {
+    private void chat() {
+        final Dialog dialog = new Dialog(this,R.style.WideDialog200);
+        dialog.setContentView(R.layout.layout_savechat);
+
+        EditText etChatName = dialog.findViewById(R.id.etChatName);
+        Button btnDone = dialog.findViewById(R.id.btnDone);
+        Button btnCancel = dialog.findViewById(R.id.btnCancel);
+
+        btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                lambda$SaveChatdialog$11(editText, dialogInterface, i);
+            public void onClick(View v) {
+                lambda$SaveChatdialog$11(etChatName, dialog);
+                dialog.dismiss();
             }
-        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        });
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(View v) {
                 ChatActivity.mics_layout.setVisibility(View.VISIBLE);
+                dialog.dismiss();
             }
         });
-        AlertDialog create = builder.create();
-        create.setCanceledOnTouchOutside(false);
-        create.show();
+
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
     }
 
-
-    public void lambda$SaveChatdialog$11(EditText editText, DialogInterface dialogInterface, int i) {
-        String obj = editText.getText().toString();
+    private void lambda$SaveChatdialog$11(EditText etChatName, Dialog dialog) {
+        String obj = etChatName.getText().toString();
         chatname = obj;
         if (obj.equals("")) {
             Toast.makeText(this, "Chat Name cannot be empty", Toast.LENGTH_SHORT).show();
@@ -374,6 +388,7 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
             Toast.makeText(this, "Chat can not be empty", Toast.LENGTH_SHORT).show();
         }
     }
+
 
 
     private boolean isNetworkConnected() {
