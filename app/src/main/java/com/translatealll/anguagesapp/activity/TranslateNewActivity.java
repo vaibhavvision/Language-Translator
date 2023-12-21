@@ -249,7 +249,7 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
                 if (binding.tvTranslatedtext.getText().toString().equals("")) {
                     Toast.makeText(TranslateNewActivity.this, "No text detected", Toast.LENGTH_SHORT).show();
                 } else {
-                    txttospeech = new TextToSpeech(TranslateNewActivity.this, new TextToSpeech.OnInitListener() {
+                     txttospeech = new TextToSpeech(TranslateNewActivity.this, new TextToSpeech.OnInitListener() {
                         @Override
                         public void onInit(int i) {
                             kprogresshud.dismiss();
@@ -351,11 +351,6 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         Translation.getClient(new TranslatorOptions.Builder().setSourceLanguage(lng1code).setTargetLanguage(lng2code).build()).translate(texttotranslate).addOnSuccessListener(new OnSuccessListener() {
             @Override
             public void onSuccess(Object obj) {
-
-//                View currentFocus = getCurrentFocus();
-//                if (currentFocus != null) {
-//                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
-//                }
                 binding.tvTranslatedtext.setText(obj.toString());
                 binding.tvTranslatedtext.setMovementMethod(new ArrowKeyMovementMethod());
                 binding.linearTranslate.setAnimation(translatedcard_anim);
@@ -375,7 +370,6 @@ public class TranslateNewActivity extends AppCompatActivity implements BottomShe
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(Exception exc) {
-//                kprogresshud.dismiss();
                 Log.e("faileddsd", "TranslateWords:failed to translate  " + exc);
                 Toast.makeText(TranslateNewActivity.this, "failed to translate", Toast.LENGTH_SHORT).show();
             }

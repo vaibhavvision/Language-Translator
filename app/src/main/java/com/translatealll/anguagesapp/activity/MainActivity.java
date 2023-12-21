@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.Image;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,6 +41,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.intuit.sdp.BuildConfig;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -69,6 +68,7 @@ import java.util.List;
 import kotlin.text.Typography;
 
 public class MainActivity extends AppCompatActivity implements BottomSheetFragclicks {
+    public static String CameraPic = "";
 
     public static int iconlang1;
     public static int iconlang2;
@@ -94,8 +94,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public static TextView tv_lang2;
     DrawerLayout mDrawerLayout;
     ImageView menu;
+    public static boolean isFirstSpeacker = false;
 
     ActivityResultLauncher<Intent> activityResultLauncher;
+    CharSequence pasteText;
 
     String[] permission;
     public static final int CAMERA_PERM_CODE = 101;
@@ -120,8 +122,63 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
         }
 
+
+        binding.btnshare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent("android.intent.action.SEND");
+                intent.setType("text/plain");
+                intent.putExtra("android.intent.extra.SUBJECT", "English Learning App");
+                intent.putExtra("android.intent.extra.TEXT", "\nFind the best app for your All Language Translate is here. \n\nhttps://play.google.com/store/apps/details?id=" + BuildConfig.LIBRARY_PACKAGE_NAME + "\n\n");
+                startActivity(Intent.createChooser(intent, "choose one"));
+            }
+        });
+        binding.btnrate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName())));
+                } catch (android.content.ActivityNotFoundException anfe) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
+                }
+            }
+        });
+
+        binding.btnConversation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,HistoryActivity.class));
+            }
+        });
+        binding.btnprivacy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, PrivacyPolicyActivity.class);
+                startActivity(intent);
+            }
+        });
+        binding.etUserinput.setOnTouchListener(new View.OnTouchListener() {
+
+            public boolean onTouch(View v, MotionEvent event) {
+                if (binding.etUserinput.hasFocus()) {
+                    v.getParent().requestDisallowInterceptTouchEvent(true);
+                    switch (event.getAction() & MotionEvent.ACTION_MASK){
+                        case MotionEvent.ACTION_SCROLL:
+                            v.getParent().requestDisallowInterceptTouchEvent(false);
+                            return true;
+                    }
+                }
+                return false;
+            }
+        });
         Log.e("dgdfgdgf", "onCreate: " + temp_downloadedlngs_list.size());
         Log.e("dgdfgdgf", "downloadd: " + downloadedlngs_list.size());
+        binding.phrases.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,ParagraphActivity.class));
+            }
+        });
         binding.imgPaste.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -195,7 +252,6 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
                     Intent data = result.getData();
                     ArrayList<String> resultData = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String recognizedText = resultData.get(0);
-//                    Toast.makeText(MainActivity.this, "You said: " + recognizedText, Toast.LENGTH_LONG).show();
                     binding.etUserinput.setText(recognizedText);
                     if (!binding.etUserinput.getText().toString().isEmpty()) {
                         binding.ivClearText.setVisibility(View.VISIBLE);
@@ -924,7 +980,6 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public void onDownloadComplete(boolean isDownload) {
         if (is_btn_translate && isDownload) {
             Is_btn_translate_auto_click = true;
-//            btn_translate.performClick();
             is_btn_translate = false;
         }
     }
