@@ -15,6 +15,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,6 +55,7 @@ public class BottomsheetFrag extends BottomSheetDialogFragment {
             lambda$new$0(bool, str, i);
         }
     };
+
 
     public BottomsheetFrag(BottomSheetFragclicks bottomS) {
         bottomSheetFragclicks = bottomS;
@@ -134,6 +136,12 @@ public class BottomsheetFrag extends BottomSheetDialogFragment {
         return inflate;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(BottomSheetDialogFragment.STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme);
+
+    }
 
     public void lambda$new$0(Boolean bool, String str, int i) {
         islangdownloaded = bool.booleanValue();
