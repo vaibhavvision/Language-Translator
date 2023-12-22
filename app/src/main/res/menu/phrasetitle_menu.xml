@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/ENGLISH"
+        android:title="English" />
+    <item
+        android:id="@+id/URDU"
+        android:title="Urdu" />
+    <item
+        android:id="@+id/ARABIC"
+        android:title="Arabic" />
+    <item
+        android:id="@+id/CHINESE"
+        android:title="Chinese" />
+    <item
+        android:id="@+id/GERMAN"
+        android:title="German" />
+    <item
+        android:id="@+id/JAPANESE"
+        android:title="JAPANESE" />
+    <item
+        android:id="@+id/ITALIAN"
+        android:title="ITALIAN" />
+    <item
+        android:id="@+id/RUSSIAN"
+        android:title="RUSSIAN" />
+    <item
+        android:id="@+id/FRENCH"
+        android:title="FRENCH" />
+    <item
+        android:id="@+id/HINDI"
+        android:title="HINDI" />
+</menu>

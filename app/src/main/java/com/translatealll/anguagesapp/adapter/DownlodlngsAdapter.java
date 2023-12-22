@@ -45,7 +45,6 @@ import kotlin.text.Typography;
 public class DownlodlngsAdapter extends RecyclerView.Adapter<DownlodlngsAdapter.AdapterViewHolder> {
     NetworkInfo active_network;
 
-    /* renamed from: cm */
     ConnectivityManager f518cm;
     Context context;
     String from;

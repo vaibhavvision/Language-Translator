@@ -1,6 +1,7 @@
 package com.translatealll.anguagesapp.utils;
 
 
+
 public class TranslateLanguage {
     public static final String AFRIKAANS = "af";
     public static final String ALBANIAN = "sq";
@@ -61,6 +62,7 @@ public class TranslateLanguage {
     public static final String WELSH = "cy";
     public static final String HEBREW = "he";
     public static final String NORWEGIAN = "no";
+
 
 
 }
