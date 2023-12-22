@@ -10,15 +10,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.adapter.LanguageAdapter;
-import com.translatealll.anguagesapp.model.Country;
-import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.model.CountryRepo;
+import com.translatealll.anguagesapp.utils.Const;
 import com.translatealll.anguagesapp.utils.PrefFile;
 
 import java.util.ArrayList;
 
 public class LanguageActivity extends AppCompatActivity {
     public static int isSelected = -1;
-    private final ArrayList<Country> mLanguages = new ArrayList<>();
+    private final ArrayList<CountryRepo> mLanguages = new ArrayList<>();
     public String[] langTitle = new String[]{"Hi!\nI'm Sam",
             "Hola!\nSoy Sam", "Salut!\nJe suis Sam", "Hallo!\nIch bin Sam", "Hola!\nSoy Sam", "привет\nя сэм", "嗨\n我是山姆", "merhaba\nben sam", "hoi ik\nben sam", "أنا سام يا\n", "হে\nআমি স্যাম", "Oi,\nEu sou Sam"};
     public String[] langName = new String[]{"English", "Spanish", "French", "German", "Spanish", "Russian", "Chinese", "Turkish", "Dutch", "Arabic", "Bangla", "Portuguese"};
@@ -34,7 +34,7 @@ public class LanguageActivity extends AppCompatActivity {
 
     private void initData() {
         for (int i = 0; i < langTitle.length; i++) {
-            Country country = new Country(langTitle[i], langName[i]);
+            CountryRepo country = new CountryRepo(langTitle[i], langName[i]);
             mLanguages.add(country);
         }
 
@@ -50,7 +50,7 @@ public class LanguageActivity extends AppCompatActivity {
                 if (isSelected == -1) {
                     Toast.makeText(LanguageActivity.this, "Please select your language!", Toast.LENGTH_SHORT).show();
                 } else {
-                    PrefFile.getInstance().setString(Constant.NEXT, "lang");
+                    PrefFile.getInstance().setString(Const.NEXT, "lang");
                     Intent intent = new Intent(LanguageActivity.this, StartActivity.class);
                     startActivity(intent);
                     finish();

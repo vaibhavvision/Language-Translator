@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.database.DownloadedLngsTable;
 import com.translatealll.anguagesapp.database.RoomDB;
-import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.utils.Const;
 import com.translatealll.anguagesapp.utils.PrefFile;
 
 
@@ -61,9 +61,9 @@ public class SplashActivity extends AppCompatActivity {
 
     private void inNext() {
 
-        if (PrefFile.getInstance().getString(Constant.NEXT).equals("intro")) {
+        if (PrefFile.getInstance().getString(Const.NEXT).equals("intro")) {
             intent = new Intent(SplashActivity.this, LanguageActivity.class);
-        } else if (PrefFile.getInstance().getString(Constant.NEXT).equals("lang")) {
+        } else if (PrefFile.getInstance().getString(Const.NEXT).equals("lang")) {
             intent = new Intent(SplashActivity.this, StartActivity.class);
         } else {
             intent = new Intent(SplashActivity.this, IntroActivity.class);

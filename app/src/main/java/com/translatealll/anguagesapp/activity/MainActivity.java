@@ -9,12 +9,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.Image;
+import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.InputType;
@@ -26,7 +25,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,9 +34,13 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
@@ -50,26 +52,31 @@ import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.database.DownloadedLngsTable;
 import com.translatealll.anguagesapp.database.ExCommon;
 import com.translatealll.anguagesapp.database.RoomDB;
 import com.translatealll.anguagesapp.databinding.ActivityMainBinding;
-import com.translatealll.anguagesapp.inter.BottomSheetFragclicks;
-import com.translatealll.anguagesapp.utils.BottomsheetFrag;
-import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.inter.DialogFragmentClick;
+import com.translatealll.anguagesapp.utils.BottomSheetFragment;
+import com.translatealll.anguagesapp.utils.Const;
 import com.translatealll.anguagesapp.utils.PrefFile;
-import com.translatealll.anguagesapp.utils.TranslateLanguage;
+import com.translatealll.anguagesapp.utils.AllLanguage;
+import com.yalantis.ucrop.UCrop;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import kotlin.text.Typography;
 
-public class MainActivity extends AppCompatActivity implements BottomSheetFragclicks {
+public class MainActivity extends AppCompatActivity implements DialogFragmentClick {
+    public static String CameraPic = "";
 
     public static int iconlang1;
     public static int iconlang2;
@@ -95,8 +102,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public static TextView tv_lang2;
     DrawerLayout mDrawerLayout;
     ImageView menu;
+    public static boolean isFirstSpeacker = false;
 
     ActivityResultLauncher<Intent> activityResultLauncher;
+    CharSequence pasteText;
 
     String[] permission;
     public static final int CAMERA_PERM_CODE = 101;
@@ -107,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-         bitmap = (Bitmap) getIntent().getParcelableExtra("imageCrop");
+        bitmap = (Bitmap) getIntent().getParcelableExtra("imageCrop");
         mDrawerLayout = findViewById(R.id.drawer_layout);
         tv_lang1 = findViewById(R.id.tv_lang1);
         tv_lang2 = findViewById(R.id.tv_lang2);
@@ -120,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             Log.d("flow", "onCreatezzz: " + downloadedlngs_list.get(i).getDownloadedlng_name());
             temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
         }
+
+        binding.etUserinput.setInputType(InputType.TYPE_NULL);
 
 
         binding.btnshare.setOnClickListener(new View.OnClickListener() {
@@ -146,13 +157,13 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding.btnConversation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,HistoryActivity.class));
+                startActivity(new Intent(MainActivity.this, HistoryActivity.class));
             }
         });
         binding.btnprivacy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, PrivacyPolicyActivity.class);
+                Intent intent = new Intent(MainActivity.this, PolicyActivity.class);
                 startActivity(intent);
             }
         });
@@ -161,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             public boolean onTouch(View v, MotionEvent event) {
                 if (binding.etUserinput.hasFocus()) {
                     v.getParent().requestDisallowInterceptTouchEvent(true);
-                    switch (event.getAction() & MotionEvent.ACTION_MASK){
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_SCROLL:
                             v.getParent().requestDisallowInterceptTouchEvent(false);
                             return true;
@@ -175,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding.phrases.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,ParagraphActivity.class));
+                startActivity(new Intent(MainActivity.this, PhrasesActivity.class));
             }
         });
         binding.imgPaste.setOnClickListener(new View.OnClickListener() {
@@ -193,8 +204,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         });
         binding.etUserinput.setInputType(InputType.TYPE_CLASS_TEXT);
         binding.etUserinput.requestFocus();
-        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.showSoftInput(binding.etUserinput, InputMethodManager.SHOW_FORCED);
+
         translatedcard_anim = AnimationUtils.loadAnimation(this, R.anim.translatedcard_anim);
         binding.etUserinput.setMovementMethod(new ScrollingMovementMethod());
         kprogresshud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).setLabel("Translating ").setCancellable(true).setAnimationSpeed(2).setDimAmount(0.5f);
@@ -205,10 +215,17 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding.tvLang2.setText(lng2name);
         binding.etUserinput.setText("");
 
+
+        if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
+            binding.ivClearText.setVisibility(View.VISIBLE);
+        } else {
+            binding.ivClearText.setVisibility(View.GONE);
+        }
+
         binding.conversation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, ChatActivity.class));
+                startActivity(new Intent(MainActivity.this, ConvsersationActivity.class));
             }
         });
         binding.history.setOnClickListener(new View.OnClickListener() {
@@ -221,26 +238,26 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             @Override
             public void onClick(View view) {
                 lang_no = "1";
-                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(MainActivity.this);
+                BottomSheetFragment bottomsheetFrag = new BottomSheetFragment(MainActivity.this);
                 Bundle bundle = new Bundle();
                 bundle.putString("langno", "1");
                 bundle.putString("from", "mainActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "main");
+                PrefFile.getInstance().setString(Const.LEFTRIGHT, "main");
             }
         });
         binding.linearRightLang.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 lang_no = "2";
-                BottomsheetFrag bottomsheetFrag = new BottomsheetFrag(MainActivity.this);
+                BottomSheetFragment bottomsheetFrag = new BottomSheetFragment(MainActivity.this);
                 Bundle bundle = new Bundle();
                 bundle.putString("langno", "2");
                 bundle.putString("from", "mainActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Constant.LEFTRIGHT, "main");
+                PrefFile.getInstance().setString(Const.LEFTRIGHT, "main");
             }
         });
 
@@ -251,9 +268,8 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
                     Intent data = result.getData();
                     ArrayList<String> resultData = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String recognizedText = resultData.get(0);
-//                    Toast.makeText(MainActivity.this, "You said: " + recognizedText, Toast.LENGTH_LONG).show();
                     binding.etUserinput.setText(recognizedText);
-                    if (!binding.etUserinput.getText().toString().isEmpty()) {
+                    if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
                         binding.ivClearText.setVisibility(View.VISIBLE);
                     } else {
                         binding.ivClearText.setVisibility(View.GONE);
@@ -292,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding.etUserinput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                someActivityResultLauncher.launch(new Intent(MainActivity.this, TranslateNewActivity.class).putExtra("mic", binding.etUserinput.getText().toString()).putExtra("pos", "1"));
+                someActivityResultLauncher.launch(new Intent(MainActivity.this, TranslateActivity.class).putExtra("mic", binding.etUserinput.getText().toString()).putExtra("pos", "1"));
             }
         });
 
@@ -344,9 +360,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         Dexter.withContext(this).withPermissions(permission).withListener(new MultiplePermissionsListener() {
             @Override
             public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
-                CropImage.activity()
-                        .setGuidelines(CropImageView.Guidelines.ON)
-                        .start(MainActivity.this);
+                Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePicture.resolveActivity(getPackageManager()) != null) {
+                    activityCameraLauncher.launch(takePicture);
+                }
             }
 
             @Override
@@ -356,54 +373,116 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         }).check();
     }
 
+    ActivityResultLauncher<Intent> activityCameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() != RESULT_CANCELED) {
+                Log.e("RESULT_CANCELED", "onActivityResult: ");
+                if (result.getResultCode() == RESULT_OK) {
+                    Bundle bundle = result.getData().getExtras();
+                    bitmap = (Bitmap) bundle.get("data");
+
+                    Log.e("dkfhksdhfskjdf", "onActivityResult: "+bitmap);
+                    File file = createImageFile();
+                    if (file != null) {
+                        FileOutputStream fout;
+                        try {
+                            fout = new FileOutputStream(file);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout);
+                            fout.flush();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Uri uri = Uri.fromFile(file);
+                        Log.e("Uri", "onActivityResult: " + uri);
+
+                        UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), "cropped_image.jpg")))
+                                .withAspectRatio(1, 1)
+                                .start(MainActivity.this);
+
+
+
+
+
+                    }
+
+                }
+            }
+
+
+        }
+    });
+
+    public File createImageFile() {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File mFileTemp = null;
+//        String root = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
+        String root = getDataDir() + "/" + getString(R.string.app_name);
+        File myDir = new File(root + "/ImageData");
+        if (!myDir.exists()) {
+            myDir.mkdirs();
+        }
+        try {
+            mFileTemp = File.createTempFile(imageFileName, ".jpg", myDir.getAbsoluteFile());
+            Log.e("" +
+                    "", "createImageFile: " + mFileTemp);
+            MediaScannerConnection.scanFile(MainActivity.this, new String[]{myDir.getAbsolutePath()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+                @Override
+                public void onScanCompleted(String path, Uri uri) {
+
+                }
+            });
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return mFileTemp;
+    }
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Bitmap bitmap = null;
-        if (requestCode != 203) {
-            if (resultCode != 204) {
-                return;
-            }
-            throw null;
-        } else if (data != null) {
-            CropImage.ActivityResult activityResult = CropImage.getActivityResult(data);
-            if (resultCode == -1) {
-                if (activityResult != null) {
-                    try {
-                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), activityResult.getUri());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, "" + e, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                if (bitmap != null) {
-                    TextRecognizer build = new TextRecognizer.Builder(getApplicationContext()).build();
-                    if (!build.isOperational()) {
-                        binding.etUserinput.setText("error");
-                        return;
-                    }
-                    Frame build2 = new Frame.Builder().setBitmap(bitmap).build();
-                    StringBuilder sb = new StringBuilder();
-                    SparseArray<TextBlock> detect = build.detect(build2);
-                    if (detect.size() > 0) {
-                        for (int i = 0; i < detect.size(); i++) {
-                            TextBlock valueAt = detect.valueAt(i);
-                            sb.append(valueAt.getValue());
-                            sb.append("\n");
-                            for (Text text : valueAt.getComponents()) {
-                                Log.e("lines", text.getValue());
-                                for (Text text2 : text.getComponents()) {
-                                    Log.e("element", text2.getValue());
+        if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
+            Uri resultUri = UCrop.getOutput(data);
+            // Use the cropped image URI here
+            Log.e("dfdsffgfdgff", "onActivityResult: " + resultUri);
+            Glide.with(this).asBitmap().load(resultUri).into(new CustomTarget<Bitmap>() {
+                @Override
+                public void onResourceReady(@NonNull Bitmap resource, @NonNull Transition<? super Bitmap> transition) {
+                    if (resource != null) {
+                        TextRecognizer build = new TextRecognizer.Builder(getApplicationContext()).build();
+                        if (!build.isOperational()) {
+                            binding.etUserinput.setText("error");
+                            return;
+                        }
+                        Frame build2 = new Frame.Builder().setBitmap(resource).build();
+                        StringBuilder sb = new StringBuilder();
+                        SparseArray<TextBlock> detect = build.detect(build2);
+                        if (detect.size() > 0) {
+                            for (int i = 0; i < detect.size(); i++) {
+                                TextBlock valueAt = detect.valueAt(i);
+                                sb.append(valueAt.getValue());
+                                sb.append("\n");
+                                for (Text text : valueAt.getComponents()) {
+                                    Log.e("lines", text.getValue());
+                                    for (Text text2 : text.getComponents()) {
+                                        Log.e("element", text2.getValue());
+                                    }
                                 }
                             }
+                            binding.etUserinput.setText(sb.substring(0, sb.toString().length() - 1));
+                            return;
                         }
-                        binding.etUserinput.setText(sb.substring(0, sb.toString().length() - 1));
-                        return;
+                        Toast.makeText(MainActivity.this, "No text found", Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(this, "No text found", Toast.LENGTH_SHORT).show();
                 }
-            }
+                @Override
+                public void onLoadCleared(@Nullable Drawable placeholder) {
+                }
+            });
         }
+
     }
 
     @Override
@@ -417,21 +496,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         }
     }
 
-    ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() != RESULT_CANCELED) {
-                Log.e("RESULT_CANCELED", "onActivityResult: ");
-                CropImage.ActivityResult resultImage = CropImage.getActivityResult(result.getData());
-                if (result.getResultCode() == RESULT_OK) {
-                    Uri resultUri = resultImage.getUri();
-                } else if (result.getResultCode() == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                    Exception error = resultImage.getError();
-                }
 
-            }
-        }
-    });
 
 
     ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -806,124 +871,124 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         }
         switch (c) {
             case 0:
-                return TranslateLanguage.KOREAN;
+                return AllLanguage.KOREAN;
             case 1:
-                return TranslateLanguage.RUSSIAN;
+                return AllLanguage.RUSSIAN;
             case 2:
-                return TranslateLanguage.ALBANIAN;
+                return AllLanguage.ALBANIAN;
             case 3:
-                return TranslateLanguage.POLISH;
+                return AllLanguage.POLISH;
             case 4:
-                return TranslateLanguage.SLOVAK;
+                return AllLanguage.SLOVAK;
             case 5:
-                return TranslateLanguage.TELUGU;
+                return AllLanguage.TELUGU;
             case 6:
-                return TranslateLanguage.GEORGIAN;
+                return AllLanguage.GEORGIAN;
             case 7:
-                return TranslateLanguage.ESPERANTO;
+                return AllLanguage.ESPERANTO;
             case '\b':
-                return TranslateLanguage.ITALIAN;
+                return AllLanguage.ITALIAN;
             case '\t':
-                return TranslateLanguage.CROATIAN;
+                return AllLanguage.CROATIAN;
             case '\n':
-                return TranslateLanguage.SPANISH;
+                return AllLanguage.SPANISH;
             case 11:
-                return TranslateLanguage.ESTONIAN;
+                return AllLanguage.ESTONIAN;
             case '\f':
-                return TranslateLanguage.SWAHILI;
+                return AllLanguage.SWAHILI;
             case '\r':
-                return TranslateLanguage.SWEDISH;
+                return AllLanguage.SWEDISH;
             case 14:
-                return TranslateLanguage.GALICIAN;
+                return AllLanguage.GALICIAN;
             case 15:
-                return TranslateLanguage.NORWEGIAN;
+                return AllLanguage.NORWEGIAN;
             case 16:
-                return TranslateLanguage.BELARUSIAN;
+                return AllLanguage.BELARUSIAN;
             case 17:
             default:
-                return TranslateLanguage.ENGLISH;
+                return AllLanguage.ENGLISH;
             case 18:
-                return TranslateLanguage.HUNGARIAN;
+                return AllLanguage.HUNGARIAN;
             case 19:
-                return TranslateLanguage.TAGALOG;
+                return AllLanguage.TAGALOG;
             case 20:
-                return TranslateLanguage.SLOVENIAN;
+                return AllLanguage.SLOVENIAN;
             case 21:
-                return TranslateLanguage.GUJARATI;
+                return AllLanguage.GUJARATI;
             case 22:
-                return TranslateLanguage.BULGARIAN;
+                return AllLanguage.BULGARIAN;
             case 23:
-                return TranslateLanguage.TURKISH;
+                return AllLanguage.TURKISH;
             case 24:
-                return TranslateLanguage.KANNADA;
+                return AllLanguage.KANNADA;
             case 25:
-                return TranslateLanguage.FINNISH;
+                return AllLanguage.FINNISH;
             case 26:
-                return TranslateLanguage.THAI;
+                return AllLanguage.THAI;
             case 27:
-                return TranslateLanguage.URDU;
+                return AllLanguage.URDU;
             case 28:
-                return TranslateLanguage.JAPANESE;
+                return AllLanguage.JAPANESE;
             case 29:
-                return TranslateLanguage.PERSIAN;
+                return AllLanguage.PERSIAN;
             case 30:
-                return TranslateLanguage.CZECH;
+                return AllLanguage.CZECH;
             case 31:
-                return TranslateLanguage.DUTCH;
+                return AllLanguage.DUTCH;
             case ' ':
-                return TranslateLanguage.GREEK;
+                return AllLanguage.GREEK;
             case '!':
-                return TranslateLanguage.HINDI;
+                return AllLanguage.HINDI;
             case '\"':
-                return TranslateLanguage.IRISH;
+                return AllLanguage.IRISH;
             case '#':
-                return TranslateLanguage.MALAY;
+                return AllLanguage.MALAY;
             case '$':
-                return TranslateLanguage.TAMIL;
+                return AllLanguage.TAMIL;
             case '%':
-                return TranslateLanguage.WELSH;
+                return AllLanguage.WELSH;
             case '&':
-                return TranslateLanguage.MACEDONIAN;
+                return AllLanguage.MACEDONIAN;
             case '\'':
-                return TranslateLanguage.UKRAINIAN;
+                return AllLanguage.UKRAINIAN;
             case '(':
-                return TranslateLanguage.BENGALI;
+                return AllLanguage.BENGALI;
             case ')':
-                return TranslateLanguage.ROMANIAN;
+                return AllLanguage.ROMANIAN;
             case '*':
-                return TranslateLanguage.LATVIAN;
+                return AllLanguage.LATVIAN;
             case '+':
-                return TranslateLanguage.HAITIAN_CREOLE;
+                return AllLanguage.HAITIAN_CREOLE;
             case ',':
-                return TranslateLanguage.VIETNAMESE;
+                return AllLanguage.VIETNAMESE;
             case '-':
-                return TranslateLanguage.ICELANDIC;
+                return AllLanguage.ICELANDIC;
             case '.':
                 return "id";
             case '/':
-                return TranslateLanguage.CATALAN;
+                return AllLanguage.CATALAN;
             case '0':
-                return TranslateLanguage.PORTUGUESE;
+                return AllLanguage.PORTUGUESE;
             case '1':
-                return TranslateLanguage.CHINESE;
+                return AllLanguage.CHINESE;
             case '2':
-                return TranslateLanguage.LITHUANIAN;
+                return AllLanguage.LITHUANIAN;
             case '3':
-                return TranslateLanguage.MALTESE;
+                return AllLanguage.MALTESE;
             case '4':
-                return TranslateLanguage.MARATHI;
+                return AllLanguage.MARATHI;
             case '5':
-                return TranslateLanguage.ARABIC;
+                return AllLanguage.ARABIC;
             case '6':
-                return TranslateLanguage.DANISH;
+                return AllLanguage.DANISH;
             case '7':
-                return TranslateLanguage.FRENCH;
+                return AllLanguage.FRENCH;
             case '8':
-                return TranslateLanguage.GERMAN;
+                return AllLanguage.GERMAN;
             case '9':
-                return TranslateLanguage.HEBREW;
+                return AllLanguage.HEBREW;
             case ':':
-                return TranslateLanguage.AFRIKAANS;
+                return AllLanguage.AFRIKAANS;
         }
     }
 
@@ -960,12 +1025,12 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         }
         Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
         String str = lang_no;
-        if (str != null && str.equals("1") && BottomsheetFrag.languagepack != null) {
-            lng1name = BottomsheetFrag.languagepack;
+        if (str != null && str.equals("1") && BottomSheetFragment.languagepack != null) {
+            lng1name = BottomSheetFragment.languagepack;
         } else {
             String str2 = lang_no;
-            if (str2 != null && str2.equals("2") && BottomsheetFrag.languagepack != null) {
-                lng2name = BottomsheetFrag.languagepack;
+            if (str2 != null && str2.equals("2") && BottomSheetFragment.languagepack != null) {
+                lng2name = BottomSheetFragment.languagepack;
             }
         }
         tv_lang1.setText(lng1name);
@@ -980,7 +1045,6 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public void onDownloadComplete(boolean isDownload) {
         if (is_btn_translate && isDownload) {
             Is_btn_translate_auto_click = true;
-//            btn_translate.performClick();
             is_btn_translate = false;
         }
     }

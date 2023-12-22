@@ -15,22 +15,22 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.model.Country;
+import com.translatealll.anguagesapp.model.CountryRepo;
 
 import java.util.ArrayList;
 
 public final class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.MyViewHolder> {
     Context context;
-    ArrayList<Country> countries;
+    ArrayList<CountryRepo> countries;
 
-    public LanguageAdapter(Context context, ArrayList<Country> countries) {
+    public LanguageAdapter(Context context, ArrayList<CountryRepo> countries) {
         this.context = context;
         this.countries = countries;
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int i) {
-        View myView = LayoutInflater.from(this.context).inflate(R.layout.layout_item_language, parent, false);
+        View myView = LayoutInflater.from(this.context).inflate(R.layout.item_language, parent, false);
         return new MyViewHolder(myView);
     }
 

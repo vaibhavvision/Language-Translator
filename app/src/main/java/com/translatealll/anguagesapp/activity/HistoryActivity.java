@@ -40,7 +40,7 @@ public class HistoryActivity extends AppCompatActivity {
         @Override
         public void OnChatclick(String str) {
             selectedchatname = str;
-            startActivity(new Intent(HistoryActivity.this, ChatActivity.class));
+            startActivity(new Intent(HistoryActivity.this, ConvsersationActivity.class));
         }
     };
 

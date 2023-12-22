@@ -49,7 +49,7 @@ public class StartActivity extends AppCompatActivity {
         findViewById(R.id.llprivacy).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(StartActivity.this, PrivacyPolicyActivity.class);
+                Intent intent = new Intent(StartActivity.this, PolicyActivity.class);
                 startActivity(intent);
             }
         });

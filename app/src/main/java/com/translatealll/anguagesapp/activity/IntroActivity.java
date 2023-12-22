@@ -8,8 +8,7 @@ import android.view.View;
 
 import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.databinding.ActivityIntroBinding;
-import com.translatealll.anguagesapp.activity.LanguageActivity;
-import com.translatealll.anguagesapp.utils.Constant;
+import com.translatealll.anguagesapp.utils.Const;
 import com.translatealll.anguagesapp.utils.PrefFile;
 
 
@@ -47,7 +46,7 @@ public class IntroActivity extends AppCompatActivity {
     }
 
     public void goToNextScreen() {
-        PrefFile.getInstance().setString(Constant.NEXT, "intro");
+        PrefFile.getInstance().setString(Const.NEXT, "intro");
         Intent intent = new Intent(this, LanguageActivity.class);
         startActivity(intent);
         finish();

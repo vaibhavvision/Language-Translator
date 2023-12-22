@@ -42,7 +42,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
 
     @Override
     public Historyviewholder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new Historyviewholder(LayoutInflater.from(context).inflate(R.layout.history_singlerow, parent, false));
+        return new Historyviewholder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_history, parent, false));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                         public void onClick(View v) {
 
                             final Dialog dialog1 = new Dialog(context, R.style.WideDialog200);
-                            dialog1.setContentView(R.layout.layout_delete);
+                            dialog1.setContentView(R.layout.dialog_delete);
                             Button btnDelete = dialog1.findViewById(R.id.btnDelete);
                             Button btnCancel = dialog1.findViewById(R.id.btnCancel);
                             btnDelete.setOnClickListener(new View.OnClickListener() {
@@ -127,7 +127,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                         @Override
                         public void onClick(View v) {
                             final Dialog dialog1 = new Dialog(context, R.style.WideDialog200);
-                            dialog1.setContentView(R.layout.layout_delete);
+                            dialog1.setContentView(R.layout.dialog_delete);
                             Button btnDelete = dialog1.findViewById(R.id.btnDelete);
                             Button btnCancel = dialog1.findViewById(R.id.btnCancel);
                             btnDelete.setOnClickListener(new View.OnClickListener() {

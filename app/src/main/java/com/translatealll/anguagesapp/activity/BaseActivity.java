@@ -9,7 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.utils.TranslateLanguage;
+import com.translatealll.anguagesapp.utils.AllLanguage;
 
 
 public class BaseActivity extends AppCompatActivity {
@@ -84,77 +84,77 @@ public class BaseActivity extends AppCompatActivity {
                 } else if (textView.getText().toString().equals("MACEDONIAN")) {
                     str2 = "mk";
                 } else if (textView.getText().toString().equals("LITHUANIAN")) {
-                    str2 = TranslateLanguage.LITHUANIAN;
+                    str2 = AllLanguage.LITHUANIAN;
                 } else if (textView.getText().toString().equals("LATVIAN")) {
-                    str2 = TranslateLanguage.LATVIAN;
+                    str2 = AllLanguage.LATVIAN;
                 } else if (textView.getText().toString().equals("KOREAN")) {
-                    str2 = TranslateLanguage.KOREAN;
+                    str2 = AllLanguage.KOREAN;
                 } else if (textView.getText().toString().equals("KANNADA")) {
-                    str2 = TranslateLanguage.KANNADA;
+                    str2 = AllLanguage.KANNADA;
                 } else if (textView.getText().toString().equals("JAPANESE")) {
-                    str2 = TranslateLanguage.JAPANESE;
+                    str2 = AllLanguage.JAPANESE;
                 } else if (textView.getText().toString().equals("ITALIAN")) {
-                    str2 = TranslateLanguage.ITALIAN;
+                    str2 = AllLanguage.ITALIAN;
                 } else if (textView.getText().toString().equals("IRISH")) {
-                    str2 = TranslateLanguage.IRISH;
+                    str2 = AllLanguage.IRISH;
                 } else if (textView.getText().toString().equals("INDONESIAN")) {
                     str2 = "id";
                 } else if (textView.getText().toString().equals("ICELANDIC")) {
-                    str2 = TranslateLanguage.ICELANDIC;
+                    str2 = AllLanguage.ICELANDIC;
                 } else if (textView.getText().toString().equals("HUNGARIAN")) {
-                    str2 = TranslateLanguage.HUNGARIAN;
+                    str2 = AllLanguage.HUNGARIAN;
                 } else if (textView.getText().toString().equals("HINDI")) {
-                    str2 = TranslateLanguage.HINDI;
+                    str2 = AllLanguage.HINDI;
                 } else if (textView.getText().toString().equals("HEBREW")) {
-                    str2 = TranslateLanguage.HEBREW;
+                    str2 = AllLanguage.HEBREW;
                 } else if (textView.getText().toString().equals("HAITIAN_CREOLE")) {
-                    str2 = TranslateLanguage.HAITIAN_CREOLE;
+                    str2 = AllLanguage.HAITIAN_CREOLE;
                 } else if (textView.getText().toString().equals("GUJARATI")) {
-                    str2 = TranslateLanguage.GUJARATI;
+                    str2 = AllLanguage.GUJARATI;
                 } else if (textView.getText().toString().equals("GREEK")) {
-                    str2 = TranslateLanguage.GREEK;
+                    str2 = AllLanguage.GREEK;
                 } else if (textView.getText().toString().equals("GEORGIAN")) {
-                    str2 = TranslateLanguage.GEORGIAN;
+                    str2 = AllLanguage.GEORGIAN;
                 } else if (textView.getText().toString().equals("WELSH")) {
-                    str2 = TranslateLanguage.WELSH;
+                    str2 = AllLanguage.WELSH;
                 } else if (textView.getText().toString().equals("VIETNAMESE")) {
-                    str2 = TranslateLanguage.VIETNAMESE;
+                    str2 = AllLanguage.VIETNAMESE;
                 } else if (textView.getText().toString().equals("UKRAINIAN")) {
-                    str2 = TranslateLanguage.UKRAINIAN;
+                    str2 = AllLanguage.UKRAINIAN;
                 } else if (textView.getText().toString().equals("TURKISH")) {
-                    str2 = TranslateLanguage.TURKISH;
+                    str2 = AllLanguage.TURKISH;
                 } else if (textView.getText().toString().equals("THAI")) {
-                    str2 = TranslateLanguage.THAI;
+                    str2 = AllLanguage.THAI;
                 } else if (textView.getText().toString().equals("TELUGU")) {
-                    str2 = TranslateLanguage.TELUGU;
+                    str2 = AllLanguage.TELUGU;
                 } else if (textView.getText().toString().equals("TAMIL")) {
-                    str2 = TranslateLanguage.TAMIL;
+                    str2 = AllLanguage.TAMIL;
                 } else if (textView.getText().toString().equals("TAGALOG")) {
-                    str2 = TranslateLanguage.TAGALOG;
+                    str2 = AllLanguage.TAGALOG;
                 } else if (textView.getText().toString().equals("SWEDISH")) {
-                    str2 = TranslateLanguage.SWEDISH;
+                    str2 = AllLanguage.SWEDISH;
                 } else if (textView.getText().toString().equals("SWAHILI")) {
-                    str2 = TranslateLanguage.SWAHILI;
+                    str2 = AllLanguage.SWAHILI;
                 } else if (textView.getText().toString().equals("SPANISH")) {
-                    str2 = TranslateLanguage.SPANISH;
+                    str2 = AllLanguage.SPANISH;
                 } else if (textView.getText().toString().equals("SLOVENIAN")) {
-                    str2 = TranslateLanguage.SLOVENIAN;
+                    str2 = AllLanguage.SLOVENIAN;
                 } else if (textView.getText().toString().equals("SLOVAK")) {
-                    str2 = TranslateLanguage.SLOVAK;
+                    str2 = AllLanguage.SLOVAK;
                 } else if (textView.getText().toString().equals("RUSSIAN")) {
-                    str2 = TranslateLanguage.RUSSIAN;
+                    str2 = AllLanguage.RUSSIAN;
                 } else if (textView.getText().toString().equals("ROMANIAN")) {
-                    str2 = TranslateLanguage.ROMANIAN;
+                    str2 = AllLanguage.ROMANIAN;
                 } else if (textView.getText().toString().equals("PORTUGUESE")) {
-                    str2 = TranslateLanguage.PORTUGUESE;
+                    str2 = AllLanguage.PORTUGUESE;
                 } else if (textView.getText().toString().equals("POLISH")) {
-                    str2 = TranslateLanguage.POLISH;
+                    str2 = AllLanguage.POLISH;
                 } else if (textView.getText().toString().equals("PERSIAN")) {
-                    str2 = TranslateLanguage.PERSIAN;
+                    str2 = AllLanguage.PERSIAN;
                 } else if (textView.getText().toString().equals("NORWEGIAN")) {
-                    str2 = TranslateLanguage.NORWEGIAN;
+                    str2 = AllLanguage.NORWEGIAN;
                 } else if (textView.getText().toString().equals("MARATHI")) {
-                    str2 = TranslateLanguage.MARATHI;
+                    str2 = AllLanguage.MARATHI;
                 } else if (!str.equals("lang1")) {
                     if (!str.equals("lang2")) {
                         str2 = null;
@@ -164,7 +164,7 @@ public class BaseActivity extends AppCompatActivity {
             language = str2;
             return true;
         }
-        str2 = TranslateLanguage.ENGLISH;
+        str2 = AllLanguage.ENGLISH;
         language = str2;
         return true;
     }

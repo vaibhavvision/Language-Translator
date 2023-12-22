@@ -12,18 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.translatealll.anguagesapp.R;
-import com.translatealll.anguagesapp.activity.ParagraphActivity;
-import com.translatealll.anguagesapp.model.Paragraph;
+import com.translatealll.anguagesapp.activity.PhrasesActivity;
+import com.translatealll.anguagesapp.model.ParagraphRepo;
 
 import java.util.ArrayList;
 
 public class ParagraphDialogAdapter extends RecyclerView.Adapter<ParagraphDialogAdapter.ViewHolder> {
 
     Context context;
-    ArrayList<Paragraph> paragraphs;
+    ArrayList<ParagraphRepo> paragraphs;
     PhraseDialogInterface phraseInterface;
 
-    public ParagraphDialogAdapter(Context context, ArrayList<Paragraph> paragraphs, PhraseDialogInterface phraseInterface) {
+    public ParagraphDialogAdapter(Context context, ArrayList<ParagraphRepo> paragraphs, PhraseDialogInterface phraseInterface) {
         this.context = context;
         this.paragraphs = paragraphs;
         this.phraseInterface = phraseInterface;
@@ -32,13 +32,13 @@ public class ParagraphDialogAdapter extends RecyclerView.Adapter<ParagraphDialog
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_paragraph, parent, false));
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_paragraph_dialog, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        if (ParagraphActivity.isSelected == position) {
+        if (PhrasesActivity.isSelected == position) {
             holder.ivSelect.setVisibility(View.VISIBLE);
         }else{
             holder.ivSelect.setVisibility(View.GONE);
@@ -51,7 +51,7 @@ public class ParagraphDialogAdapter extends RecyclerView.Adapter<ParagraphDialog
             @Override
             public void onClick(View view) {
                 phraseInterface.OnPhraseDialogClick(paragraphs.get(position).getName(), position);
-                ParagraphActivity.isSelected = position;
+                PhrasesActivity.isSelected = position;
                 notifyDataSetChanged();
 
             }
