@@ -195,6 +195,9 @@ public class ChatActivity extends AppCompatActivity implements BottomSheetFragcl
         iconlang2 = MainActivity.getPref(this).getInt("iconlang2", R.drawable.flg_urdu);
         tv_lang1.setText(lng1name);
         tv_lang2.setText(lng2name);
+
+        chatlist.clear();
+
         btn_M1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

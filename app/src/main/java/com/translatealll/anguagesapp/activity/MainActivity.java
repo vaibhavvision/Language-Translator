@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.Image;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +20,6 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -70,6 +67,7 @@ import kotlin.text.Typography;
 
 public class MainActivity extends AppCompatActivity implements BottomSheetFragclicks {
 
+    public static final int CAMERA_PERM_CODE = 101;
     public static int iconlang1;
     public static int iconlang2;
     public static String lang_no;
@@ -79,34 +77,89 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public static String lng2name;
     public static SharedPreferences main_pref;
     public static RoomDB roomDB;
-
     public static List<DownloadedLngsTable> downloadedlngs_list = new ArrayList();
     public static ArrayList<String> temp_downloadedlngs_list = new ArrayList<>();
+    public static String from;
+    public static TextView tvLanguageDownload;
+    public static TextView tv_lang1;
+    public static TextView tv_lang2;
     boolean is_btn_translate;
     KProgressHUD kprogresshud;
     Animation translatedcard_anim;
     TextToSpeech txttospeech;
     boolean Is_btn_translate_auto_click = false;
     ActivityMainBinding binding;
-    public static String from;
-    public static TextView tvLanguageDownload;
-    public static TextView tv_lang1;
-    public static TextView tv_lang2;
     DrawerLayout mDrawerLayout;
     ImageView menu;
-
     ActivityResultLauncher<Intent> activityResultLauncher;
-
     String[] permission;
-    public static final int CAMERA_PERM_CODE = 101;
     Bitmap bitmap;
+    ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() != RESULT_CANCELED) {
+                Log.e("RESULT_CANCELED", "onActivityResult: ");
+                CropImage.ActivityResult resultImage = CropImage.getActivityResult(result.getData());
+                if (result.getResultCode() == RESULT_OK) {
+                    Uri resultUri = resultImage.getUri();
+                } else if (result.getResultCode() == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                    Exception error = resultImage.getError();
+                }
+
+            }
+        }
+    });
+    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                binding.etUserinput.setText("");
+                binding.ivClearText.setVisibility(View.GONE);
+            }
+        }
+    });
+
+    public static SharedPreferences getPref(Context context) {
+        SharedPreferences sharedPreferences = main_pref;
+        if (sharedPreferences != null) {
+            return sharedPreferences;
+        }
+        SharedPreferences sharedPreferences2 = context.getSharedPreferences("mainactivityprefernce", 0);
+        main_pref = sharedPreferences2;
+        return sharedPreferences2;
+    }
+
+    public static void setData(Context context) {
+        downloadedlngs_list.clear();
+        temp_downloadedlngs_list.clear();
+        downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
+        for (int i = 0; i < downloadedlngs_list.size(); i++) {
+            temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
+        }
+        Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
+        String str = lang_no;
+        if (str != null && str.equals("1") && BottomsheetFrag.languagepack != null) {
+            lng1name = BottomsheetFrag.languagepack;
+        } else {
+            String str2 = lang_no;
+            if (str2 != null && str2.equals("2") && BottomsheetFrag.languagepack != null) {
+                lng2name = BottomsheetFrag.languagepack;
+            }
+        }
+        tv_lang1.setText(lng1name);
+        tv_lang2.setText(lng2name);
+        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
+        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
+        getPref(context).edit().putInt("iconlang1", iconlang1).apply();
+        getPref(context).edit().putInt("iconlang2", iconlang2).apply();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-         bitmap = (Bitmap) getIntent().getParcelableExtra("imageCrop");
+        bitmap = (Bitmap) getIntent().getParcelableExtra("imageCrop");
         mDrawerLayout = findViewById(R.id.drawer_layout);
         tv_lang1 = findViewById(R.id.tv_lang1);
         tv_lang2 = findViewById(R.id.tv_lang2);
@@ -158,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding.history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,HistoryActivity.class));
+                startActivity(new Intent(MainActivity.this, HistoryActivity.class));
             }
         });
         binding.linearLeftLang.setOnClickListener(new View.OnClickListener() {
@@ -360,34 +413,6 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
             }
         }
     }
-
-    ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() != RESULT_CANCELED) {
-                Log.e("RESULT_CANCELED", "onActivityResult: ");
-                CropImage.ActivityResult resultImage = CropImage.getActivityResult(result.getData());
-                if (result.getResultCode() == RESULT_OK) {
-                    Uri resultUri = resultImage.getUri();
-                } else if (result.getResultCode() == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                    Exception error = resultImage.getError();
-                }
-
-            }
-        }
-    });
-
-
-    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == Activity.RESULT_OK) {
-                binding.etUserinput.setText("");
-                binding.ivClearText.setVisibility(View.GONE);
-            }
-        }
-    });
-
 
     private String Chooselng1Code(String language1name) {
         language1name.hashCode();
@@ -883,41 +908,6 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
                 }
             }
         }
-    }
-
-    public static SharedPreferences getPref(Context context) {
-        SharedPreferences sharedPreferences = main_pref;
-        if (sharedPreferences != null) {
-            return sharedPreferences;
-        }
-        SharedPreferences sharedPreferences2 = context.getSharedPreferences("mainactivityprefernce", 0);
-        main_pref = sharedPreferences2;
-        return sharedPreferences2;
-    }
-
-    public static void setData(Context context) {
-        downloadedlngs_list.clear();
-        temp_downloadedlngs_list.clear();
-        downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
-        for (int i = 0; i < downloadedlngs_list.size(); i++) {
-            temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
-        }
-        Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
-        String str = lang_no;
-        if (str != null && str.equals("1") && BottomsheetFrag.languagepack != null) {
-            lng1name = BottomsheetFrag.languagepack;
-        } else {
-            String str2 = lang_no;
-            if (str2 != null && str2.equals("2") && BottomsheetFrag.languagepack != null) {
-                lng2name = BottomsheetFrag.languagepack;
-            }
-        }
-        tv_lang1.setText(lng1name);
-        tv_lang2.setText(lng2name);
-        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
-        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
-        getPref(context).edit().putInt("iconlang1", iconlang1).apply();
-        getPref(context).edit().putInt("iconlang2", iconlang2).apply();
     }
 
     @Override

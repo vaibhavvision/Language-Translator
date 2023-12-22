@@ -23,7 +23,7 @@
         android:id="@+id/btnClearChat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save Chat"
+        android:text="Clear Chat"
         android:gravity="center"
         android:background="@drawable/bg_lang_base_shape"
         android:layout_gravity="center"

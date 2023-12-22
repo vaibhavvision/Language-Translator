@@ -32,7 +32,8 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_lang_1"
             android:textSize="@dimen/_12ssp"
-            android:text="Done"
+            android:textAllCaps="false"
+            android:text="Save"
             android:textColor="@color/white" />
 
         <Button
@@ -42,6 +43,7 @@
             android:layout_marginStart="16dp"
             android:background="@drawable/et_border_translate_shape"
             android:textSize="@dimen/_12ssp"
+            android:textAllCaps="false"
             android:text="Cancel" />
     </LinearLayout>
 </LinearLayout>

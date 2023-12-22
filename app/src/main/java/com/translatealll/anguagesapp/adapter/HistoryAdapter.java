@@ -27,14 +27,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
     String condition;
     Context context;
     RoomDB roomDB;
+    TextView tv_nohistory;
+    RecyclerView historyRecView;
 
-
-    public HistoryAdapter(String condition, ArrayList<String> chatlist, ArrayList<WordsHistoryTable> wordslist, Context context, Chatclicklistener chatclicklistener) {
+    public HistoryAdapter(String condition, ArrayList<String> chatlist, ArrayList<WordsHistoryTable> wordslist, Context context, Chatclicklistener chatclicklistener, TextView tv_nohistory, RecyclerView historyRecView) {
         this.wordslist = wordslist;
         this.context = context;
         this.condition = condition;
         this.chatlist = chatlist;
         this.chatclicklistener = chatclicklistener;
+        this.tv_nohistory = tv_nohistory;
+        this.historyRecView = historyRecView;
     }
 
     @Override
@@ -85,6 +88,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                                     roomDBInstance.downloadedlngs_dao().delete(chatlist.get(position));
                                     ArrayList<String> arrayList = chatlist;
                                     arrayList.remove(arrayList.get(position));
+                                    if(arrayList.size()==0)
+                                    {
+                                        tv_nohistory.setVisibility(View.VISIBLE);
+                                        historyRecView.setVisibility(View.GONE);
+                                    }
                                     notifyDataSetChanged();
                                     dialog1.dismiss();
                                 }
@@ -128,7 +136,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                                     RoomDB roomDBInstance = RoomDB.getRoomDBInstance(context);
                                     roomDB = roomDBInstance;
                                     roomDBInstance.downloadedlngs_dao().deleteword(wordslist.get(position));
+                                    tv_nohistory.setVisibility(View.VISIBLE);
                                     wordslist.remove(position);
+                                    if(wordslist.size()==0)
+                                    {
+                                        tv_nohistory.setVisibility(View.VISIBLE);
+                                        historyRecView.setVisibility(View.GONE);
+                                    }
                                     notifyDataSetChanged();
                                     dialog1.dismiss();
                                 }
