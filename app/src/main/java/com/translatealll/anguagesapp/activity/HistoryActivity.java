@@ -1,8 +1,6 @@
 package com.translatealll.anguagesapp.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.translatealll.anguagesapp.R;
 import com.translatealll.anguagesapp.adapter.HistoryAdapter;
@@ -77,7 +74,7 @@ public class HistoryActivity extends AppCompatActivity {
                     historyRecView.setLayoutManager(new LinearLayoutManager(HistoryActivity.this));
                     ArrayList<String> arrayList = temp_chatnameslist;
                     ArrayList<WordsHistoryTable> arrayList2 = historylist;
-                    historyAdapter = new HistoryAdapter("savedchat", arrayList, arrayList2, HistoryActivity.this, chatclicklistener);
+                    historyAdapter = new HistoryAdapter("savedchat", arrayList, arrayList2, HistoryActivity.this, chatclicklistener, tv_nohistory, historyRecView);
                     historyRecView.setAdapter(historyAdapter);
                     historyRecView.setVisibility(View.VISIBLE);
                     return;
@@ -105,7 +102,7 @@ public class HistoryActivity extends AppCompatActivity {
                 HistoryActivity historyActivity = HistoryActivity.this;
                 ArrayList<String> arrayList = temp_chatnameslist;
                 ArrayList<WordsHistoryTable> arrayList2 = historylist;
-                historyActivity.historyAdapter = new HistoryAdapter("history", arrayList, arrayList2, HistoryActivity.this, chatclicklistener);
+                historyActivity.historyAdapter = new HistoryAdapter("history", arrayList, arrayList2, HistoryActivity.this, chatclicklistener,tv_nohistory, historyRecView);
                 historyRecView.setAdapter(historyAdapter);
             }
         });
@@ -118,7 +115,7 @@ public class HistoryActivity extends AppCompatActivity {
         Collections.reverse(historylist);
         Collections.reverse(chatnameslist);
         historyRecView.setLayoutManager(new LinearLayoutManager(this));
-        historyAdapter = new HistoryAdapter("history", temp_chatnameslist, historylist, this, chatclicklistener);
+        historyAdapter = new HistoryAdapter("history", temp_chatnameslist, historylist, this, chatclicklistener, tv_nohistory,historyRecView);
         historyRecView.setAdapter(historyAdapter);
     }
 
@@ -134,7 +131,7 @@ public class HistoryActivity extends AppCompatActivity {
             historyRecView.setLayoutManager(new LinearLayoutManager(HistoryActivity.this));
             ArrayList<String> arrayList = temp_chatnameslist;
             ArrayList<WordsHistoryTable> arrayList2 = historylist;
-            historyAdapter = new HistoryAdapter("savedchat", arrayList, arrayList2, HistoryActivity.this, chatclicklistener);
+            historyAdapter = new HistoryAdapter("savedchat", arrayList, arrayList2, HistoryActivity.this, chatclicklistener, tv_nohistory, historyRecView);
             historyRecView.setAdapter(historyAdapter);
             historyRecView.setVisibility(View.VISIBLE);
             return;

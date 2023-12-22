@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.Image;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -68,7 +70,6 @@ import java.util.List;
 import kotlin.text.Typography;
 
 public class MainActivity extends AppCompatActivity implements BottomSheetFragclicks {
-    public static String CameraPic = "";
 
     public static int iconlang1;
     public static int iconlang2;
@@ -94,10 +95,8 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public static TextView tv_lang2;
     DrawerLayout mDrawerLayout;
     ImageView menu;
-    public static boolean isFirstSpeacker = false;
 
     ActivityResultLauncher<Intent> activityResultLauncher;
-    CharSequence pasteText;
 
     String[] permission;
     public static final int CAMERA_PERM_CODE = 101;
@@ -215,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
         binding.history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,HistoryActivity.class));
+                startActivity(new Intent(MainActivity.this, HistoryActivity.class));
             }
         });
         binding.linearLeftLang.setOnClickListener(new View.OnClickListener() {
@@ -252,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
                     Intent data = result.getData();
                     ArrayList<String> resultData = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String recognizedText = resultData.get(0);
+//                    Toast.makeText(MainActivity.this, "You said: " + recognizedText, Toast.LENGTH_LONG).show();
                     binding.etUserinput.setText(recognizedText);
                     if (!binding.etUserinput.getText().toString().isEmpty()) {
                         binding.ivClearText.setVisibility(View.VISIBLE);
@@ -980,6 +980,7 @@ public class MainActivity extends AppCompatActivity implements BottomSheetFragcl
     public void onDownloadComplete(boolean isDownload) {
         if (is_btn_translate && isDownload) {
             Is_btn_translate_auto_click = true;
+//            btn_translate.performClick();
             is_btn_translate = false;
         }
     }
