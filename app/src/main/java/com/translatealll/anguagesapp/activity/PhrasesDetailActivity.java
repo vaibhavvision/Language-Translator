@@ -26,9 +26,7 @@ public class PhrasesDetailActivity extends AppCompatActivity {
     String[] phrases_list;
     RecyclerView phrasesdetail_recview;
     String phrasetitle;
-    String[] translation_list;
     TextView tv_phrasetitle;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

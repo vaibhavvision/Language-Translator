@@ -17,13 +17,13 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -48,10 +48,10 @@ import com.translatealll.anguagesapp.database.ChatTable;
 import com.translatealll.anguagesapp.database.RoomDB;
 import com.translatealll.anguagesapp.database.WordsHistoryTable;
 import com.translatealll.anguagesapp.inter.DialogFragmentClick;
+import com.translatealll.anguagesapp.utils.AllLanguage;
 import com.translatealll.anguagesapp.utils.BottomSheetFragment;
 import com.translatealll.anguagesapp.utils.Const;
 import com.translatealll.anguagesapp.utils.PrefFile;
-import com.translatealll.anguagesapp.utils.AllLanguage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,11 +60,9 @@ import kotlin.text.Typography;
 
 
 public class ConvsersationActivity extends AppCompatActivity implements DialogFragmentClick {
-    public static ImageView btn_M1;
-    public static ImageView btn_M2;
-    public static ImageView btn_lng_transition;
-    public static ImageView btn_mic1;
-    public static ImageView btn_mic2;
+    ImageView btn_M1;
+    ImageView btn_M2;
+    ImageView btn_lng_transition;
     public static RecyclerView chatRecView;
     public static ConversationAdapter chat_adapter;
 
@@ -81,14 +79,14 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
     ChatTable chatobj;
     KProgressHUD hud;
     TranslatorOptions options;
-
     String texttotranslate;
     String translatedtext1;
     Translator translator;
     String user;
     ImageView back;
-    Toolbar chattoolbar_layout;
     ArrayList<WordsHistoryTable> lngslist = new ArrayList<>();
+
+    public static boolean isClick = false;
     int counter = 0;
     ActivityResultLauncher<Intent> intentforvoicetotext = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback() {
         @Override
@@ -105,11 +103,11 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
             MainActivity.temp_downloadedlngs_list.add(MainActivity.downloadedlngs_list.get(i).getDownloadedlng_name());
         }
         if (MainActivity.lang_no != null && BottomSheetFragment.languagepack != null && MainActivity.lang_no.equals("1")) {
-            tv_lang1.setText(BottomSheetFragment.languagepack);
+//            tv_lang1.setText(BottomSheetFragment.languagepack);
             BottomSheetFragment.languagepack = null;
             MainActivity.getPref(context2).edit().putInt("iconlang1", BottomSheetFragment.iconlanguage).apply();
         } else if (MainActivity.lang_no != null && BottomSheetFragment.languagepack != null && MainActivity.lang_no.equals(ExifInterface.GPS_MEASUREMENT_2D)) {
-            tv_lang2.setText(BottomSheetFragment.languagepack);
+//            tv_lang2.setText(BottomSheetFragment.languagepack);
             BottomSheetFragment.languagepack = null;
             MainActivity.getPref(context2).edit().putInt("iconlang2", BottomSheetFragment.iconlanguage).apply();
         }
@@ -134,30 +132,30 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
     }
 
     public static void setData(Context context) {
-        downloadedlngs_list.clear();
-        temp_downloadedlngs_list.clear();
-
-        downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
-
-        for (int i = 0; i < downloadedlngs_list.size(); i++) {
-            temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
-        }
-        Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
-        String str = lang_no;
-        if (str != null && str.equals("1") && BottomSheetFragment.languagepack != null) {
-            lng1name = BottomSheetFragment.languagepack;
-        } else {
-            String str2 = lang_no;
-            if (str2 != null && str2.equals("2") && BottomSheetFragment.languagepack != null) {
-                lng2name = BottomSheetFragment.languagepack;
+        if (roomDB != null) {
+            downloadedlngs_list.clear();
+            temp_downloadedlngs_list.clear();
+            downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
+            for (int i = 0; i < downloadedlngs_list.size(); i++) {
+                temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
             }
+            Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
+            String str = lang_no;
+            if (str != null && str.equals("1") && BottomSheetFragment.languagepack != null) {
+                lng1name = BottomSheetFragment.languagepack;
+            } else {
+                String str2 = lang_no;
+                if (str2 != null && str2.equals("2") && BottomSheetFragment.languagepack != null) {
+                    lng2name = BottomSheetFragment.languagepack;
+                }
+            }
+            tv_lang1.setText(lng1name);
+            tv_lang2.setText(lng2name);
+            getPref(context).edit().putString("lng1name", lng1name).apply();
+            getPref(context).edit().putString("lng2name", lng2name).apply();
+            getPref(context).edit().putInt("iconlang1", iconlang1).apply();
+            getPref(context).edit().putInt("iconlang2", iconlang2).apply();
         }
-        tv_lang1.setText(lng1name);
-        tv_lang2.setText(lng2name);
-        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString().substring(0, 1).toUpperCase() + tv_lang1.getText().toString().substring(1).toUpperCase()).apply();
-        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString().substring(0, 1).toUpperCase() + tv_lang2.getText().toString().substring(1).toUpperCase()).apply();
-        getPref(context).edit().putInt("iconlang1", iconlang1).apply();
-        getPref(context).edit().putInt("iconlang2", iconlang2).apply();
     }
 
     @Override
@@ -186,13 +184,32 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
         back = findViewById(R.id.back);
         btn_lng_transition = (ImageView) findViewById(R.id.img_lng_transition);
         lng1name = MainActivity.getPref(this).getString("lng1name", "ENGLISH");
-        lng2name = MainActivity.getPref(this).getString("lng2name", "URDU");
-        iconlang1 = MainActivity.getPref(this).getInt("iconlang1", R.drawable.flg_english);
-        iconlang2 = MainActivity.getPref(this).getInt("iconlang2", R.drawable.flg_urdu);
-        tv_lang1.setText(lng1name);
-        tv_lang2.setText(lng2name);
+        lng2name = MainActivity.getPref(this).getString("lng2name", "FRENCH");
+        if (!lng1name.equals(lng2name)) {
+            tv_lang1.setText(lng1name);
+            tv_lang2.setText(lng2name);
+        }
 
         chatlist.clear();
+
+        btn_lng_transition.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RotateAnimation rotateAnimation = new RotateAnimation(0.0f, 180.0f, 1, 0.5f, 1, 0.5f);
+                rotateAnimation.setDuration(500L);
+                btn_lng_transition.startAnimation(rotateAnimation);
+                lng1name = MainActivity.getPref(ConvsersationActivity.this).getString("lng1name", "ENGLISH");
+                lng2name = MainActivity.getPref(ConvsersationActivity.this).getString("lng2name", "FRENCH");
+                tv_lang1.setText(lng2name);
+                tv_lang2.setText(lng1name);
+                iconlang2 = MainActivity.getPref(ConvsersationActivity.this).getInt("iconlang1", R.drawable.flg_english);
+                iconlang1 = MainActivity.getPref(ConvsersationActivity.this).getInt("iconlang2", R.drawable.flg_urdu);
+                MainActivity.getPref(ConvsersationActivity.this).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
+                MainActivity.getPref(ConvsersationActivity.this).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
+                lng1name = MainActivity.getPref(ConvsersationActivity.this).getString("lng1name", "ENGLISH");
+                lng2name = MainActivity.getPref(ConvsersationActivity.this).getString("lng2name", "FRENCH");
+            }
+        });
 
         btn_M1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -200,18 +217,14 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
                 MainActivity.lng1name = MainActivity.getPref(ConvsersationActivity.this).getString("lng1name", "ENGLISH");
                 MainActivity.lng1code = Chooselng1Code(MainActivity.lng1name);
                 MainActivity.lang_no = "1";
-
                 if (isNetworkConnected()) {
-                    if (!MainActivity.temp_downloadedlngs_list.contains(tv_lang1.getText().toString())) {
+                    if (!MainActivity.temp_downloadedlngs_list.contains(lng1name)) {
                         Toast.makeText(ConvsersationActivity.this, "Download " + tv_lang1.getText().toString(), Toast.LENGTH_SHORT).show();
-                        return;
-                    } else if (!MainActivity.temp_downloadedlngs_list.contains(tv_lang2.getText().toString())) {
+                    } else if (!MainActivity.temp_downloadedlngs_list.contains(lng2name)) {
                         Toast.makeText(ConvsersationActivity.this, "Download " + tv_lang2.getText().toString(), Toast.LENGTH_SHORT).show();
-                        return;
                     } else {
                         user = "user1";
                         GetUserVoice(MainActivity.lng1code);
-                        return;
                     }
                 }
                 Toast.makeText(ConvsersationActivity.this, "Internet is needed for speech to text translation", Toast.LENGTH_SHORT).show();
@@ -225,14 +238,11 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
                 if (isNetworkConnected()) {
                     if (!MainActivity.temp_downloadedlngs_list.contains(lng1name)) {
                         Toast.makeText(ConvsersationActivity.this, "Download " + tv_lang1.getText().toString(), Toast.LENGTH_SHORT).show();
-                        return;
                     } else if (!MainActivity.temp_downloadedlngs_list.contains(lng2name)) {
                         Toast.makeText(ConvsersationActivity.this, "Download " + tv_lang2.getText().toString(), Toast.LENGTH_SHORT).show();
-                        return;
                     } else {
                         user = "user2";
                         GetUserVoice(MainActivity.lng2code);
-                        return;
                     }
                 }
                 Toast.makeText(ConvsersationActivity.this, "Internet is needed for speech to text translation", Toast.LENGTH_SHORT).show();
@@ -242,19 +252,19 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
             @Override
             public void onClick(View view) {
                 lang_no = "1";
-                PrefFile.getInstance().setString(Const.LEFTRIGHT, "chat");
                 BottomSheetFragment bottomsheetFrag = new BottomSheetFragment(ConvsersationActivity.this);
                 Bundle bundle = new Bundle();
                 bundle.putString("langno", "1");
                 bundle.putString("from", "chatActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
+                PrefFile.getInstance().setString(Const.DROPDOWN, "chat");
+                isClick = false;
             }
         });
         btn_Select2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PrefFile.getInstance().setString(Const.LEFTRIGHT, "chat");
                 lang_no = "2";
                 BottomSheetFragment bottomsheetFrag = new BottomSheetFragment(ConvsersationActivity.this);
                 Bundle bundle = new Bundle();
@@ -262,6 +272,8 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
                 bundle.putString("from", "chatActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
+                PrefFile.getInstance().setString(Const.DROPDOWN, "chat");
+                isClick = false;
             }
         });
         tv_lang2.setOnClickListener(new View.OnClickListener() {
@@ -292,7 +304,6 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
                         dialog.dismiss();
                     }
                 });
-
                 btnClearChat.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -321,7 +332,7 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
     }
 
     private void chat() {
-        final Dialog dialog = new Dialog(this,R.style.WideDialog200);
+        final Dialog dialog = new Dialog(this, R.style.WideDialog200);
         dialog.setContentView(R.layout.dialog_savechat);
 
         EditText etChatName = dialog.findViewById(R.id.etChatName);
@@ -331,7 +342,7 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lambda$SaveChatdialog$11(etChatName, dialog);
+                saveChatDialog(etChatName, dialog);
                 dialog.dismiss();
             }
         });
@@ -349,7 +360,7 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
 
     }
 
-    private void lambda$SaveChatdialog$11(EditText etChatName, Dialog dialog) {
+    private void saveChatDialog(EditText etChatName, Dialog dialog) {
         String obj = etChatName.getText().toString();
         chatname = obj;
         if (obj.equals("")) {
@@ -370,7 +381,6 @@ public class ConvsersationActivity extends AppCompatActivity implements DialogFr
             Toast.makeText(this, "Chat can not be empty", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
     private boolean isNetworkConnected() {

@@ -4,18 +4,19 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.media.MediaScannerConnection;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -25,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,17 +36,16 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.Frame;
-import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.intuit.sdp.BuildConfig;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.karumi.dexter.Dexter;
@@ -53,29 +54,26 @@ import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.translatealll.anguagesapp.R;
+import com.translatealll.anguagesapp.crop.CropFragment;
 import com.translatealll.anguagesapp.database.DownloadedLngsTable;
 import com.translatealll.anguagesapp.database.ExCommon;
 import com.translatealll.anguagesapp.database.RoomDB;
+import com.translatealll.anguagesapp.database.WordsHistoryTable;
 import com.translatealll.anguagesapp.databinding.ActivityMainBinding;
 import com.translatealll.anguagesapp.inter.DialogFragmentClick;
+import com.translatealll.anguagesapp.utils.AllLanguage;
 import com.translatealll.anguagesapp.utils.BottomSheetFragment;
 import com.translatealll.anguagesapp.utils.Const;
 import com.translatealll.anguagesapp.utils.PrefFile;
-import com.translatealll.anguagesapp.utils.AllLanguage;
-import com.yalantis.ucrop.UCrop;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import kotlin.text.Typography;
 
-public class MainActivity extends AppCompatActivity implements DialogFragmentClick {
+public class MainActivity extends AppCompatActivity implements DialogFragmentClick, CropFragment.OnCropPhoto {
     public static String CameraPic = "";
 
     public static int iconlang1;
@@ -93,23 +91,18 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
     boolean is_btn_translate;
     KProgressHUD kprogresshud;
     Animation translatedcard_anim;
-    TextToSpeech txttospeech;
     boolean Is_btn_translate_auto_click = false;
     ActivityMainBinding binding;
     public static String from;
-    public static TextView tvLanguageDownload;
     public static TextView tv_lang1;
     public static TextView tv_lang2;
     DrawerLayout mDrawerLayout;
     ImageView menu;
-    public static boolean isFirstSpeacker = false;
-
     ActivityResultLauncher<Intent> activityResultLauncher;
-    CharSequence pasteText;
-
     String[] permission;
     public static final int CAMERA_PERM_CODE = 101;
     Bitmap bitmap;
+    private Uri image_uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,10 +122,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
             Log.d("flow", "onCreatezzz: " + downloadedlngs_list.get(i).getDownloadedlng_name());
             temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
         }
-
         binding.etUserinput.setInputType(InputType.TYPE_NULL);
-
-
         binding.btnshare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
                 }
             }
         });
-
         binding.btnConversation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -209,12 +198,13 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
         binding.etUserinput.setMovementMethod(new ScrollingMovementMethod());
         kprogresshud = KProgressHUD.create(this).setStyle(KProgressHUD.Style.SPIN_INDETERMINATE).setLabel("Translating ").setCancellable(true).setAnimationSpeed(2).setDimAmount(0.5f);
         Log.e("flow", "onCreate:size od downloaded and temp list " + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
-        lng1name = getPref(this).getString("lng1name", "English");
-        lng2name = getPref(this).getString("lng2name", "French");
-        binding.tvLang1.setText(lng1name);
-        binding.tvLang2.setText(lng2name);
+        lng1name = getPref(this).getString("lng1name", "ENGLISH");
+        lng2name = getPref(this).getString("lng2name", "FRENCH");
+        if (!lng1name.equals(lng2name)) {
+            binding.tvLang1.setText(lng1name);
+            binding.tvLang2.setText(lng2name);
+        }
         binding.etUserinput.setText("");
-
 
         if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
             binding.ivClearText.setVisibility(View.VISIBLE);
@@ -244,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
                 bundle.putString("from", "mainActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Const.LEFTRIGHT, "main");
+                PrefFile.getInstance().setString(Const.DROPDOWN, "main");
             }
         });
         binding.linearRightLang.setOnClickListener(new View.OnClickListener() {
@@ -257,10 +247,211 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
                 bundle.putString("from", "mainActivity");
                 bottomsheetFrag.setArguments(bundle);
                 bottomsheetFrag.show(getSupportFragmentManager(), "TAG");
-                PrefFile.getInstance().setString(Const.LEFTRIGHT, "main");
+                PrefFile.getInstance().setString(Const.DROPDOWN, "main");
             }
         });
 
+        binding.ivLanguageConvert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RotateAnimation rotateAnimation = new RotateAnimation(0.0f, 180.0f, 1, 0.5f, 1, 0.5f);
+                rotateAnimation.setDuration(500L);
+                binding.ivLanguageConvert.startAnimation(rotateAnimation);
+                lng2name = getPref(MainActivity.this).getString("lng1name", "ENGLISH");
+                lng1name = getPref(MainActivity.this).getString("lng2name", "URDU");
+                binding.tvLang1.setText(lng1name);
+                binding.tvLang2.setText(lng2name);
+                getPref(MainActivity.this).edit().putString("lng1name", lng1name).apply();
+                getPref(MainActivity.this).edit().putString("lng2name", lng2name).apply();
+                lng1name = getPref(MainActivity.this).getString("lng1name", "ENGLISH");
+                lng2name = getPref(MainActivity.this).getString("lng2name", "URDU");
+                binding.tvLang1.setText(lng1name);
+                binding.tvLang2.setText(lng2name);
+                Log.d("TAG", "language1" + lng1name);
+                Log.d("TAG", "language2" + lng2name);
+
+                if (lng1name.equals("KOREAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+                } else if (lng1name.equals("RUSSIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ALBANIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("POLISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("SLOVAK")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("TELUGU")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("GEORGIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ESPERANTO")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ITALIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("CROATIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("SPANISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ESTONIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("SWAHILI")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("SWEDISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("GALICIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("NORWEGIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("BELARUSIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ENGLISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT).toString());
+
+                } else if (lng1name.equals("HUNGARIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("TAGALOG")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("SLOVENIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("GUJARATI")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("BULGARIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("TURKISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("KANNADA")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("FINNISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("THAI")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("URDU")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("JAPANESE")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("PERSIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("CZECH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("DUTCH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("GREEK")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("HINDI")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT).toString());
+
+                } else if (lng1name.equals("IRISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("MALAY")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("TAMIL")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("WELSH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("MACEDONIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("UKRAINIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("BENGALI")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ROMANIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("LATVIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("HAITIAN_CREOLE")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT).toString());
+
+                } else if (lng1name.equals("VIETNAMESE")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ICELANDIC")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("INDONESIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("CATALAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("PORTUGUESE")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("CHINESE")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("LITHUANIAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("MALTESE")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("MARATHI")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("ARABIC")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("DANISH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("FRENCH")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("GERMAN")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+
+                } else if (lng1name.equals("HEBREW")) {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+                } else {
+                    binding.etUserinput.setText(PrefFile.getInstance().getString(Const.LANCONVERT));
+                }
+
+                if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
+                    TranslateWords(binding.etUserinput.getText().toString().trim());
+                }
+
+            }
+        });
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
@@ -268,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
                     Intent data = result.getData();
                     ArrayList<String> resultData = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String recognizedText = resultData.get(0);
-                    binding.etUserinput.setText(recognizedText);
+                    someActivityResultLauncher.launch(new Intent(MainActivity.this, TranslateActivity.class).putExtra("mic", recognizedText.toString()).putExtra("pos", "1"));
                     if (!binding.etUserinput.getText().toString().trim().isEmpty()) {
                         binding.ivClearText.setVisibility(View.VISIBLE);
                     } else {
@@ -311,43 +502,12 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
                 someActivityResultLauncher.launch(new Intent(MainActivity.this, TranslateActivity.class).putExtra("mic", binding.etUserinput.getText().toString()).putExtra("pos", "1"));
             }
         });
-
         binding.ivCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 cameraPermission();
             }
         });
-
-
-        if (bitmap != null) {
-            TextRecognizer build = new TextRecognizer.Builder(getApplicationContext()).build();
-            if (!build.isOperational()) {
-                binding.etUserinput.setText("error");
-                return;
-            }
-            Frame build2 = new Frame.Builder().setBitmap(bitmap).build();
-            StringBuilder sb = new StringBuilder();
-            SparseArray<TextBlock> detect = build.detect(build2);
-            if (detect.size() > 0) {
-                for (int i = 0; i < detect.size(); i++) {
-                    TextBlock valueAt = detect.valueAt(i);
-                    sb.append(valueAt.getValue());
-                    sb.append("\n");
-                    for (Text text : valueAt.getComponents()) {
-                        Log.e("lines", text.getValue());
-                        for (Text text2 : text.getComponents()) {
-                            Log.e("element", text2.getValue());
-                        }
-                    }
-                }
-                binding.etUserinput.setText(sb.substring(0, sb.toString().length() - 1));
-                return;
-            }
-            Toast.makeText(this, "No text found", Toast.LENGTH_SHORT).show();
-        }
-
-
     }
 
     private void cameraPermission() {
@@ -356,14 +516,16 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
         } else {
             permission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
         }
-
         Dexter.withContext(this).withPermissions(permission).withListener(new MultiplePermissionsListener() {
             @Override
             public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
-                Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePicture.resolveActivity(getPackageManager()) != null) {
-                    activityCameraLauncher.launch(takePicture);
-                }
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.TITLE, "New Picture");
+                values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera");
+                image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
+                activityCameraLauncher.launch(cameraIntent);
             }
 
             @Override
@@ -377,112 +539,53 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
         @Override
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() != RESULT_CANCELED) {
-                Log.e("RESULT_CANCELED", "onActivityResult: ");
+                Log.e("RESULT_CANCELED", "onAxctivityResult: ");
                 if (result.getResultCode() == RESULT_OK) {
-                    Bundle bundle = result.getData().getExtras();
-                    bitmap = (Bitmap) bundle.get("data");
-
-                    Log.e("dkfhksdhfskjdf", "onActivityResult: "+bitmap);
-                    File file = createImageFile();
-                    if (file != null) {
-                        FileOutputStream fout;
-                        try {
-                            fout = new FileOutputStream(file);
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fout);
-                            fout.flush();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        Uri uri = Uri.fromFile(file);
-                        Log.e("Uri", "onActivityResult: " + uri);
-
-                        UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), "cropped_image.jpg")))
-                                .withAspectRatio(1, 1)
-                                .start(MainActivity.this);
-
-
-
-
-
-                    }
-
+                    Bitmap inputImage = uriToBitmap(image_uri);
+                    Log.e(":fdfdf", "onActivityResult: " + image_uri);
+                    CropFragment.show(MainActivity.this, MainActivity.this, inputImage);
                 }
             }
-
-
         }
     });
 
-    public File createImageFile() {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File mFileTemp = null;
-//        String root = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
-        String root = getDataDir() + "/" + getString(R.string.app_name);
-        File myDir = new File(root + "/ImageData");
-        if (!myDir.exists()) {
-            myDir.mkdirs();
-        }
+    private Bitmap uriToBitmap(Uri selectedFileUri) {
         try {
-            mFileTemp = File.createTempFile(imageFileName, ".jpg", myDir.getAbsoluteFile());
-            Log.e("" +
-                    "", "createImageFile: " + mFileTemp);
-            MediaScannerConnection.scanFile(MainActivity.this, new String[]{myDir.getAbsolutePath()}, null, new MediaScannerConnection.OnScanCompletedListener() {
-                @Override
-                public void onScanCompleted(String path, Uri uri) {
-
-                }
-            });
-        } catch (IOException e1) {
-            e1.printStackTrace();
+            ParcelFileDescriptor parcelFileDescriptor =
+                    getContentResolver().openFileDescriptor(selectedFileUri, "r");
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+            Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+            parcelFileDescriptor.close();
+            return image;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return mFileTemp;
+        return null;
     }
 
+    public void TranslateWords(String texttotranslate) {
+        lng1code = Chooselng1Code(lng1name);
+        lng2code = Chooselng2Code(lng2name);
+        Translation.getClient(new TranslatorOptions.Builder().setSourceLanguage(lng1code).setTargetLanguage(lng2code).build()).translate(texttotranslate).addOnSuccessListener(new OnSuccessListener() {
+            @Override
+            public void onSuccess(Object obj) {
+                binding.etUserinput.setText(obj.toString());
+                PrefFile.getInstance().setString(Const.LANCONVERT, binding.etUserinput.getText().toString());
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == UCrop.REQUEST_CROP && resultCode == RESULT_OK) {
-            Uri resultUri = UCrop.getOutput(data);
-            // Use the cropped image URI here
-            Log.e("dfdsffgfdgff", "onActivityResult: " + resultUri);
-            Glide.with(this).asBitmap().load(resultUri).into(new CustomTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @NonNull Transition<? super Bitmap> transition) {
-                    if (resource != null) {
-                        TextRecognizer build = new TextRecognizer.Builder(getApplicationContext()).build();
-                        if (!build.isOperational()) {
-                            binding.etUserinput.setText("error");
-                            return;
-                        }
-                        Frame build2 = new Frame.Builder().setBitmap(resource).build();
-                        StringBuilder sb = new StringBuilder();
-                        SparseArray<TextBlock> detect = build.detect(build2);
-                        if (detect.size() > 0) {
-                            for (int i = 0; i < detect.size(); i++) {
-                                TextBlock valueAt = detect.valueAt(i);
-                                sb.append(valueAt.getValue());
-                                sb.append("\n");
-                                for (Text text : valueAt.getComponents()) {
-                                    Log.e("lines", text.getValue());
-                                    for (Text text2 : text.getComponents()) {
-                                        Log.e("element", text2.getValue());
-                                    }
-                                }
-                            }
-                            binding.etUserinput.setText(sb.substring(0, sb.toString().length() - 1));
-                            return;
-                        }
-                        Toast.makeText(MainActivity.this, "No text found", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                @Override
-                public void onLoadCleared(@Nullable Drawable placeholder) {
-                }
-            });
-        }
-
+                WordsHistoryTable wordsHistoryTable = new WordsHistoryTable();
+                wordsHistoryTable.setLanguage1(lng1name);
+                wordsHistoryTable.setLanguage2(lng2name);
+                wordsHistoryTable.setTexttotranslate(texttotranslate);
+                wordsHistoryTable.setTranslatedtext(obj.toString());
+                roomDB.downloadedlngs_dao().insert_lngs(wordsHistoryTable);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(Exception exc) {
+                Log.e("faileddsd", "TranslateWords:failed to translate  " + exc);
+                Toast.makeText(MainActivity.this, "failed to translate", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -496,19 +599,17 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
         }
     }
 
-
-
-
     ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
         @Override
         public void onActivityResult(ActivityResult result) {
             if (result.getResultCode() == Activity.RESULT_OK) {
+                binding.tvLang1.setText(lng1name);
+                binding.tvLang2.setText(lng2name);
                 binding.etUserinput.setText("");
                 binding.ivClearText.setVisibility(View.GONE);
             }
         }
     });
-
 
     private String Chooselng1Code(String language1name) {
         language1name.hashCode();
@@ -992,6 +1093,547 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
         }
     }
 
+    private String Chooselng2Code(String language2name) {
+        language2name.hashCode();
+        char c = 65535;
+        switch (language2name.hashCode()) {
+            case -2072311548:
+                if (language2name.equals("KOREAN")) {
+                    c = 0;
+
+                    break;
+                }
+                break;
+            case -2021434509:
+                if (language2name.equals("RUSSIAN")) {
+                    c = 1;
+
+                    break;
+                }
+                break;
+            case -1998693422:
+                if (language2name.equals("ALBANIAN")) {
+                    c = 2;
+
+                    break;
+                }
+                break;
+            case -1929340143:
+                if (language2name.equals("POLISH")) {
+                    c = 3;
+
+                    break;
+                }
+                break;
+            case -1846121942:
+                if (language2name.equals("SLOVAK")) {
+                    c = 4;
+
+                    break;
+                }
+                break;
+            case -1824047576:
+                if (language2name.equals("TELUGU")) {
+                    c = 5;
+
+                    break;
+                }
+                break;
+            case -1661654192:
+                if (language2name.equals("GEORGIAN")) {
+                    c = 6;
+
+                    break;
+                }
+                break;
+            case -1496931977:
+                if (language2name.equals("ESPERANTO")) {
+                    c = 7;
+
+                    break;
+                }
+                break;
+            case -1464494112:
+                if (language2name.equals("ITALIAN")) {
+                    c = '\b';
+
+                    break;
+                }
+                break;
+            case -1405627549:
+                if (language2name.equals("CROATIAN")) {
+                    c = '\t';
+
+                    break;
+                }
+                break;
+            case -1293848364:
+                if (language2name.equals("SPANISH")) {
+                    c = '\n';
+
+                    break;
+                }
+                break;
+            case -1171574191:
+                if (language2name.equals("ESTONIAN")) {
+                    c = 11;
+
+                    break;
+                }
+                break;
+            case -1093623269:
+                if (language2name.equals("SWAHILI")) {
+                    c = '\f';
+
+                    break;
+                }
+                break;
+            case -1090048133:
+                if (language2name.equals("SWEDISH")) {
+                    c = '\r';
+
+                    break;
+                }
+                break;
+            case -1011019926:
+                if (language2name.equals("GALICIAN")) {
+                    c = 14;
+
+                    break;
+                }
+                break;
+            case -981927346:
+                if (language2name.equals("NORWEGIAN")) {
+                    c = 15;
+
+                    break;
+                }
+                break;
+            case -948864834:
+                if (language2name.equals("BELARUSIAN")) {
+                    c = 16;
+
+                    break;
+                }
+                break;
+            case -885774768:
+                if (language2name.equals("ENGLISH")) {
+                    c = 17;
+
+                    break;
+                }
+                break;
+            case -871655265:
+                if (language2name.equals("HUNGARIAN")) {
+                    c = 18;
+
+                    break;
+                }
+                break;
+            case -830625347:
+                if (language2name.equals("TAGALOG")) {
+                    c = 19;
+
+                    break;
+                }
+                break;
+            case -758693139:
+                if (language2name.equals("SLOVENIAN")) {
+                    c = 20;
+
+                    break;
+                }
+                break;
+            case -505022199:
+                if (language2name.equals("GUJARATI")) {
+                    c = 21;
+
+                    break;
+                }
+                break;
+            case -391870441:
+                if (language2name.equals("BULGARIAN")) {
+                    c = 22;
+
+                    break;
+                }
+                break;
+            case -247588444:
+                if (language2name.equals("TURKISH")) {
+                    c = 23;
+
+                    break;
+                }
+                break;
+            case -221382872:
+                if (language2name.equals("KANNADA")) {
+                    c = 24;
+
+                    break;
+                }
+                break;
+            case -134892613:
+                if (language2name.equals("FINNISH")) {
+                    c = 25;
+
+                    break;
+                }
+                break;
+            case 2573724:
+                if (language2name.equals("THAI")) {
+                    c = 26;
+
+                    break;
+                }
+                break;
+            case 2613230:
+                if (language2name.equals("URDU")) {
+                    c = 27;
+
+                    break;
+                }
+                break;
+            case 29896625:
+                if (language2name.equals("JAPANESE")) {
+                    c = 28;
+
+                    break;
+                }
+                break;
+            case 39535488:
+                if (language2name.equals("PERSIAN")) {
+                    c = 29;
+
+                    break;
+                }
+                break;
+            case 64625555:
+                if (language2name.equals("CZECH")) {
+                    c = 30;
+
+                    break;
+                }
+                break;
+            case 65414536:
+                if (language2name.equals("DUTCH")) {
+                    c = 31;
+
+                    break;
+                }
+                break;
+            case 68081376:
+                if (language2name.equals("GREEK")) {
+                    c = ' ';
+
+                    break;
+                }
+                break;
+            case 68745394:
+                if (language2name.equals("HINDI")) {
+                    c = '!';
+
+                    break;
+                }
+                break;
+            case 69932693:
+                if (language2name.equals("IRISH")) {
+                    c = '\"';
+
+                    break;
+                }
+                break;
+            case 73122672:
+                if (language2name.equals("MALAY")) {
+                    c = '#';
+
+                    break;
+                }
+                break;
+            case 79588515:
+                if (language2name.equals("TAMIL")) {
+                    c = Typography.dollar;
+
+                    break;
+                }
+                break;
+            case 82477587:
+                if (language2name.equals("WELSH")) {
+                    c = '%';
+
+                    break;
+                }
+                break;
+            case 167462569:
+                if (language2name.equals("MACEDONIAN")) {
+                    c = Typography.amp;
+
+                    break;
+                }
+                break;
+            case 243547852:
+                if (language2name.equals("UKRAINIAN")) {
+                    c = '\'';
+
+                    break;
+                }
+                break;
+            case 495326914:
+                if (language2name.equals("BENGALI")) {
+                    c = '(';
+
+                    break;
+                }
+                break;
+            case 541742905:
+                if (language2name.equals("ROMANIAN")) {
+                    c = ')';
+
+                    break;
+                }
+                break;
+            case 671907871:
+                if (language2name.equals("LATVIAN")) {
+                    c = '*';
+
+                    break;
+                }
+                break;
+            case 799935903:
+                if (language2name.equals("HAITIAN_CREOLE")) {
+                    c = '+';
+
+                    break;
+                }
+                break;
+            case 1010710335:
+                if (language2name.equals("VIETNAMESE")) {
+                    c = ',';
+
+                    break;
+                }
+                break;
+            case 1055466096:
+                if (language2name.equals("ICELANDIC")) {
+                    c = '-';
+
+                    break;
+                }
+                break;
+            case 1236562858:
+                if (language2name.equals("INDONESIAN")) {
+                    c = '.';
+
+                    break;
+                }
+                break;
+            case 1273686606:
+                if (language2name.equals("CATALAN")) {
+                    c = '/';
+
+                    break;
+                }
+                break;
+            case 1322880565:
+                if (language2name.equals("PORTUGUESE")) {
+                    c = '0';
+
+                    break;
+                }
+                break;
+            case 1464313037:
+                if (language2name.equals("CHINESE")) {
+                    c = '1';
+
+                    break;
+                }
+                break;
+            case 1488524197:
+                if (language2name.equals("LITHUANIAN")) {
+                    c = '2';
+
+                    break;
+                }
+                break;
+            case 1551960507:
+                if (language2name.equals("MALTESE")) {
+                    c = '3';
+
+                    break;
+                }
+                break;
+            case 1556949682:
+                if (language2name.equals("MARATHI")) {
+                    c = '4';
+
+                    break;
+                }
+                break;
+            case 1938625708:
+                if (language2name.equals("ARABIC")) {
+                    c = '5';
+
+                    break;
+                }
+                break;
+            case 2009207629:
+                if (language2name.equals("DANISH")) {
+                    c = '6';
+
+                    break;
+                }
+                break;
+            case 2081901978:
+                if (language2name.equals("FRENCH")) {
+                    c = '7';
+
+                    break;
+                }
+                break;
+            case 2098911622:
+                if (language2name.equals("GERMAN")) {
+                    c = '8';
+
+                    break;
+                }
+                break;
+            case 2127069055:
+                if (language2name.equals("HEBREW")) {
+                    c = '9';
+
+                    break;
+                }
+                break;
+            case 2139267348:
+                if (language2name.equals("AFRIKAANS")) {
+                    c = ':';
+
+                    break;
+                }
+                break;
+        }
+        switch (c) {
+            case 0:
+                return AllLanguage.KOREAN;
+            case 1:
+                return AllLanguage.RUSSIAN;
+            case 2:
+                return AllLanguage.ALBANIAN;
+            case 3:
+                return AllLanguage.POLISH;
+            case 4:
+                return AllLanguage.SLOVAK;
+            case 5:
+                return AllLanguage.TELUGU;
+            case 6:
+                return AllLanguage.GEORGIAN;
+            case 7:
+                return AllLanguage.ESPERANTO;
+            case '\b':
+                return AllLanguage.ITALIAN;
+            case '\t':
+                return AllLanguage.CROATIAN;
+            case '\n':
+                return AllLanguage.SPANISH;
+            case 11:
+                return AllLanguage.ESTONIAN;
+            case '\f':
+                return AllLanguage.SWAHILI;
+            case '\r':
+                return AllLanguage.SWEDISH;
+            case 14:
+                return AllLanguage.GALICIAN;
+            case 15:
+                return AllLanguage.NORWEGIAN;
+            case 16:
+                return AllLanguage.BELARUSIAN;
+            case 17:
+                return AllLanguage.ENGLISH;
+            case 18:
+                return AllLanguage.HUNGARIAN;
+            case 19:
+                return AllLanguage.TAGALOG;
+            case 20:
+                return AllLanguage.SLOVENIAN;
+            case 21:
+                return AllLanguage.GUJARATI;
+            case 22:
+                return AllLanguage.BULGARIAN;
+            case 23:
+                return AllLanguage.TURKISH;
+            case 24:
+                return AllLanguage.KANNADA;
+            case 25:
+                return AllLanguage.FINNISH;
+            case 26:
+                return AllLanguage.THAI;
+            case 27:
+            default:
+                return AllLanguage.URDU;
+            case 28:
+                return AllLanguage.JAPANESE;
+            case 29:
+                return AllLanguage.PERSIAN;
+            case 30:
+                return AllLanguage.CZECH;
+            case 31:
+                return AllLanguage.DUTCH;
+            case ' ':
+                return AllLanguage.GREEK;
+            case '!':
+                return AllLanguage.HINDI;
+            case '\"':
+                return AllLanguage.IRISH;
+            case '#':
+                return AllLanguage.MALAY;
+            case '$':
+                return AllLanguage.TAMIL;
+            case '%':
+                return AllLanguage.WELSH;
+            case '&':
+                return AllLanguage.MACEDONIAN;
+            case '\'':
+                return AllLanguage.UKRAINIAN;
+            case '(':
+                return AllLanguage.BENGALI;
+            case ')':
+                return AllLanguage.ROMANIAN;
+            case '*':
+                return AllLanguage.LATVIAN;
+            case '+':
+                return AllLanguage.HAITIAN_CREOLE;
+            case ',':
+                return AllLanguage.VIETNAMESE;
+            case '-':
+                return AllLanguage.ICELANDIC;
+            case '.':
+                return "id";
+            case '/':
+                return AllLanguage.CATALAN;
+            case '0':
+                return AllLanguage.PORTUGUESE;
+            case '1':
+                return AllLanguage.CHINESE;
+            case '2':
+                return AllLanguage.LITHUANIAN;
+            case '3':
+                return AllLanguage.MALTESE;
+            case '4':
+                return AllLanguage.MARATHI;
+            case '5':
+                return AllLanguage.ARABIC;
+            case '6':
+                return AllLanguage.DANISH;
+            case '7':
+                return AllLanguage.FRENCH;
+            case '8':
+                return AllLanguage.GERMAN;
+            case '9':
+                return AllLanguage.HEBREW;
+            case ':':
+                return AllLanguage.AFRIKAANS;
+        }
+    }
+
     private void pasteTextFromClipboard() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboardManager != null && clipboardManager.hasPrimaryClip()) {
@@ -1000,7 +1642,7 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
                 ClipData.Item item = clipData.getItemAt(0);
                 CharSequence pasteText = item.getText();
                 if (pasteText != null) {
-                    binding.etUserinput.setText(pasteText);
+                    someActivityResultLauncher.launch(new Intent(MainActivity.this, TranslateActivity.class).putExtra("mic", pasteText.toString()).putExtra("pos", "1"));
                 }
             }
         }
@@ -1017,28 +1659,30 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
     }
 
     public static void setData(Context context) {
-        downloadedlngs_list.clear();
-        temp_downloadedlngs_list.clear();
-        downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
-        for (int i = 0; i < downloadedlngs_list.size(); i++) {
-            temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
-        }
-        Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
-        String str = lang_no;
-        if (str != null && str.equals("1") && BottomSheetFragment.languagepack != null) {
-            lng1name = BottomSheetFragment.languagepack;
-        } else {
-            String str2 = lang_no;
-            if (str2 != null && str2.equals("2") && BottomSheetFragment.languagepack != null) {
-                lng2name = BottomSheetFragment.languagepack;
+        if (roomDB != null) {
+            downloadedlngs_list.clear();
+            temp_downloadedlngs_list.clear();
+            downloadedlngs_list = roomDB.downloadedlngs_dao().SelectDownloadedLngs();
+            for (int i = 0; i < downloadedlngs_list.size(); i++) {
+                temp_downloadedlngs_list.add(downloadedlngs_list.get(i).getDownloadedlng_name());
             }
+            Log.e("flow", "onResume: downloaded and temp list size" + downloadedlngs_list.size() + "////" + temp_downloadedlngs_list.size());
+            String str = lang_no;
+            if (str != null && str.equals("1") && BottomSheetFragment.languagepack != null) {
+                lng1name = BottomSheetFragment.languagepack;
+            } else {
+                String str2 = lang_no;
+                if (str2 != null && str2.equals("2") && BottomSheetFragment.languagepack != null) {
+                    lng2name = BottomSheetFragment.languagepack;
+                }
+            }
+            tv_lang1.setText(lng1name);
+            tv_lang2.setText(lng2name);
+            getPref(context).edit().putString("lng1name", lng1name).apply();
+            getPref(context).edit().putString("lng2name", lng2name).apply();
+            getPref(context).edit().putInt("iconlang1", iconlang1).apply();
+            getPref(context).edit().putInt("iconlang2", iconlang2).apply();
         }
-        tv_lang1.setText(lng1name);
-        tv_lang2.setText(lng2name);
-        getPref(context).edit().putString("lng1name", tv_lang1.getText().toString()).apply();
-        getPref(context).edit().putString("lng2name", tv_lang2.getText().toString()).apply();
-        getPref(context).edit().putInt("iconlang1", iconlang1).apply();
-        getPref(context).edit().putInt("iconlang2", iconlang2).apply();
     }
 
     @Override
@@ -1059,5 +1703,29 @@ public class MainActivity extends AppCompatActivity implements DialogFragmentCli
         if (kprogresshud.isShowing()) {
             kprogresshud.dismiss();
         }
+    }
+
+    @Override
+    public void finishCrop(Bitmap bitmap) {
+        if (bitmap != null) {
+            TextRecognizer recognizer = new TextRecognizer.Builder(getApplicationContext()).build();
+
+            if (!recognizer.isOperational()) {
+                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+            } else {
+                Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+                SparseArray<TextBlock> items = recognizer.detect(frame);
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < items.size(); i++) {
+                    TextBlock myItem = items.valueAt(i);
+                    sb.append(myItem.getValue());
+                    sb.append("\n");
+                }
+                someActivityResultLauncher.launch(new Intent(MainActivity.this, TranslateActivity.class).putExtra("mic", sb.substring(0, sb.toString().length() - 1)).putExtra("pos", "1"));
+                return;
+            }
+            Toast.makeText(this, "No text found", Toast.LENGTH_SHORT).show();
+        }
+        Log.e("sfdsfdfdfd", "finishCrop: " + bitmap);
     }
 }

@@ -18,17 +18,15 @@ import com.translatealll.anguagesapp.model.ParagraphRepo;
 import java.util.ArrayList;
 
 
-public class PharsesFragment extends BottomSheetDialogFragment  {
-
-
+public class PharsesFragment extends BottomSheetDialogFragment {
     RecyclerView recyclerViewParagraph;
     ParagraphDialogAdapter.PhraseDialogInterface phraseInterface;
     String[] paragraphName = new String[]{"English", "Urdu", "Arabic", "Chinese", "German", "Japanese", "Italian", "Russian", "French", "Hindi"};
-    int[] paragraphImage = new int[]{R.drawable.flg_english,R.drawable.flg_urdu,R.drawable.flg_arabic,R.drawable.flg_china,R.drawable.flg_germany,R.drawable.flg_japani,R.drawable.flg_itlay,R.drawable.flg_russian,R.drawable.flg_franch,R.drawable.flg_hindi};
+    int[] paragraphImage = new int[]{R.drawable.flg_english, R.drawable.flg_urdu, R.drawable.flg_arabic, R.drawable.flg_china, R.drawable.flg_germany, R.drawable.flg_japani, R.drawable.flg_itlay, R.drawable.flg_russian, R.drawable.flg_franch, R.drawable.flg_hindi};
     ArrayList<ParagraphRepo> arrayList = new ArrayList<>();
 
     public PharsesFragment(ParagraphDialogAdapter.PhraseDialogInterface phraseInterface) {
-        this.phraseInterface =phraseInterface;
+        this.phraseInterface = phraseInterface;
     }
 
     @Override
@@ -41,13 +39,12 @@ public class PharsesFragment extends BottomSheetDialogFragment  {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         recyclerViewParagraph = view.findViewById(R.id.recyclerViewParagraph);
-
         for (int i = 0; i < paragraphName.length; i++) {
-            arrayList.add(new ParagraphRepo(paragraphName[i],paragraphImage[i]));
+            arrayList.add(new ParagraphRepo(paragraphName[i], paragraphImage[i]));
         }
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerViewParagraph.setLayoutManager(linearLayoutManager);
-        ParagraphDialogAdapter paragraphDialogAdapter = new ParagraphDialogAdapter(getActivity(), arrayList,phraseInterface);
+        ParagraphDialogAdapter paragraphDialogAdapter = new ParagraphDialogAdapter(getActivity(), arrayList, phraseInterface);
         recyclerViewParagraph.setAdapter(paragraphDialogAdapter);
     }
 }

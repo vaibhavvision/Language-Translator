@@ -1,6 +1,8 @@
 package com.translatealll.anguagesapp.adapter;
 
 
+import static com.translatealll.anguagesapp.activity.ConvsersationActivity.isClick;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -123,14 +125,18 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Adapte
                 langDownloadInterface.OnDownloadComplete(false, adapterViewHolder.tv_langname.getText().toString(), MainActivity.iconlang2);
             }
 
-            if (PrefFile.getInstance().getString(Const.LEFTRIGHT).equals("main")) {
-                MainActivity.setData(context);
-            } else {
-                if (PrefFile.getInstance().getString(Const.LEFTRIGHT).equals("chat")) {
-                    ConvsersationActivity.setData(context);
+            if (!MainActivity.lng1name.equals(MainActivity.lng2name)){
+                if (PrefFile.getInstance().getString(Const.DROPDOWN).equals("main")) {
+                    MainActivity.setData(context);
                 } else {
-                    TranslateActivity.setData(context);
+                    if (isClick) {
+                        TranslateActivity.setData(context);
+                    } else {
+                        ConvsersationActivity.setData(context);
+                    }
                 }
+            }else {
+                PrefFile.getInstance().setBool(Const.DOWLOAD,true);
             }
 
             notifyDataSetChanged();
@@ -678,15 +684,19 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.Adapte
                     langDownloadInterface.OnDownloadComplete(true, lngs_list.get(position).getTitle(), MainActivity.iconlang2);
                 }
 
-                if (PrefFile.getInstance().getString(Const.LEFTRIGHT).equals("main")) {
-                    MainActivity.setData(context);
-                } else if (PrefFile.getInstance().getString(Const.LEFTRIGHT).equals("chat")) {
-                    ConvsersationActivity.setData(context);
-                } else {
-                    TranslateActivity.setData(context);
+                if (!MainActivity.lng1name.equals(MainActivity.lng2name)){
+                    if (PrefFile.getInstance().getString(Const.DROPDOWN).equals("main")) {
+                        MainActivity.setData(context);
+                    } else {
+                        if (isClick) {
+                            TranslateActivity.setData(context);
+                        } else {
+                            ConvsersationActivity.setData(context);
+                        }
+                    }
+                }else {
+                    PrefFile.getInstance().setBool(Const.DOWLOAD,true);
                 }
-
-
                 notifyDataSetChanged();
             }
         }).addOnFailureListener(new OnFailureListener() {

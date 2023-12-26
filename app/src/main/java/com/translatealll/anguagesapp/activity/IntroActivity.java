@@ -48,6 +48,7 @@ public class IntroActivity extends AppCompatActivity {
     public void goToNextScreen() {
         PrefFile.getInstance().setString(Const.NEXT, "intro");
         Intent intent = new Intent(this, LanguageActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }

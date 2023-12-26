@@ -14,13 +14,10 @@ import com.translatealll.anguagesapp.utils.AllLanguage;
 
 public class BaseActivity extends AppCompatActivity {
     String language;
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-
     public String LanguageSelection(View v, final TextView tv_lang, final String langg) {
         PopupMenu popupMenu = new PopupMenu(this, v);
         popupMenu.inflate(R.menu.lngs_menu);

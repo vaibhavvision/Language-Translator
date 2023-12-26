@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -32,19 +32,16 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
                 android:fontFamily="@font/lato_semi_bold"
                 android:gravity="center"
                 android:text="Translator"
                 android:textColor="@color/black"
                 android:textSize="@dimen/_16ssp" />
 
-            <ImageView
-                android:id="@+id/favorite"
-                android:layout_width="@dimen/_35sdp"
-                android:layout_height="@dimen/_35sdp"
-                android:adjustViewBounds="true"
-                android:src="@drawable/ic_favorite" />
-        </LinearLayout>
+
+        </RelativeLayout>
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -103,7 +100,7 @@
                     </LinearLayout>
 
                     <ImageView
-                        android:id="@+id/img_lng_transition"
+                        android:id="@+id/ivLanguageConvert"
                         android:layout_width="@dimen/_24sdp"
                         android:layout_height="@dimen/_24sdp"
                         android:layout_marginHorizontal="@dimen/_3sdp"
@@ -170,6 +167,8 @@
                         android:textColor="@color/black"
                         android:textSize="@dimen/_14ssp" />
 
+
+
                     <ImageView
                         android:id="@+id/ivClearText"
                         android:layout_width="@dimen/_20sdp"
@@ -191,6 +190,8 @@
                     android:adjustViewBounds="true"
                     android:src="@drawable/ic_paste_iocn"
                     android:visibility="visible" />
+
+
 
                 <LinearLayout
                     android:id="@+id/linearCameraMic"

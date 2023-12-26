@@ -3,6 +3,7 @@ package com.translatealll.anguagesapp.adapter;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +11,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.translatealll.anguagesapp.R;
+import com.translatealll.anguagesapp.activity.TranslateActivity;
 import com.translatealll.anguagesapp.database.RoomDB;
 import com.translatealll.anguagesapp.database.WordsHistoryTable;
 
@@ -47,7 +50,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
 
     @Override
     public void onBindViewHolder(Historyviewholder holder, @SuppressLint("RecyclerView") int position) {
-
         if (this.condition.equals("savedchat")) {
             holder.tv_text2.setPadding(0, 10, 0, 0);
             holder.tv_text2.setTextSize(15.0f);
@@ -60,8 +62,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                     chatclicklistener.OnChatclick(chatlist.get(position));
                 }
             });
-
-
             holder.btn_more.setOnClickListener(new View.OnClickListener() {
                 @SuppressLint("MissingInflatedId")
                 @Override
@@ -75,8 +75,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                     itDeleteee.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-
-                            final Dialog dialog1 = new Dialog(context, R.style.WideDialog200);
+                            Dialog dialog1 = new Dialog(context, R.style.WideDialog200);
                             dialog1.setContentView(R.layout.dialog_delete);
                             Button btnDelete = dialog1.findViewById(R.id.btnDelete);
                             Button btnCancel = dialog1.findViewById(R.id.btnCancel);
@@ -88,8 +87,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                                     roomDBInstance.downloadedlngs_dao().delete(chatlist.get(position));
                                     ArrayList<String> arrayList = chatlist;
                                     arrayList.remove(arrayList.get(position));
-                                    if(arrayList.size()==0)
-                                    {
+                                    if (arrayList.size() == 0) {
                                         tv_nohistory.setVisibility(View.VISIBLE);
                                         historyRecView.setVisibility(View.GONE);
                                     }
@@ -138,8 +136,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                                     roomDBInstance.downloadedlngs_dao().deleteword(wordslist.get(position));
                                     tv_nohistory.setVisibility(View.VISIBLE);
                                     wordslist.remove(position);
-                                    if(wordslist.size()==0)
-                                    {
+                                    if (wordslist.size() == 0) {
                                         tv_nohistory.setVisibility(View.VISIBLE);
                                         historyRecView.setVisibility(View.GONE);
                                     }
@@ -162,7 +159,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Historyv
                     itCopy.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            // Handle Copy action
+                            if (holder.tv_text2.getText().toString().equals("")) {
+                                Toast.makeText(context, "No text found", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            ((ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setText(holder.tv_text2.getText().toString());
+                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         }
                     });

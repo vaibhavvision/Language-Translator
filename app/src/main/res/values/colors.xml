@@ -9,5 +9,10 @@
     <color name="transparent">#00000000</color>
     <color name="phasettitlecolor">#2c90a7f3</color>
     <color name="blue">#4e74f1</color>
+    <color name="BackgroundCardColor">#252525</color>
+    <color name="mainColor">#6B2FE0</color>
+    <color name="cropItem">#1A6B2FE0</color>
+    <color name="BackgroundColor">#303030</color>
+    <color name="tintCol">#959595</color>
 
 </resources>

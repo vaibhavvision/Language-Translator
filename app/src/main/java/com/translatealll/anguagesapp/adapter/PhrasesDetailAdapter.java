@@ -137,8 +137,6 @@ public class PhrasesDetailAdapter extends RecyclerView.Adapter<PhrasesDetailAdap
             }
         });
     }
-
-
     @Override
     public int getItemCount() {
         return this.phraseslist.size();

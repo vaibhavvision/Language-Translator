@@ -56,9 +56,6 @@ public class ParagraphDialogAdapter extends RecyclerView.Adapter<ParagraphDialog
 
             }
         });
-
-
-
     }
 
     @Override

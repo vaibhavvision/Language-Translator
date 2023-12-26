@@ -6,10 +6,7 @@ import android.content.SharedPreferences;
 public class PrefFile {
     private SharedPreferences appSharedPrefs;
     private SharedPreferences.Editor prefsEditor;
-
     public static PrefFile prefFile;
-
-
 
     public PrefFile() {
     }

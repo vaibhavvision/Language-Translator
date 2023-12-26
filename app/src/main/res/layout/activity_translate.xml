@@ -83,7 +83,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/img_lng_transition"
+            android:id="@+id/ivLanguageConvert"
             android:layout_width="@dimen/_24sdp"
             android:layout_height="@dimen/_24sdp"
             android:layout_marginHorizontal="@dimen/_3sdp"
@@ -166,6 +166,9 @@
                         android:scrollbarStyle="insideInset"
                         android:textColor="@color/black"
                         android:textSize="@dimen/_14ssp" />
+
+
+
 
 
                     <ImageView

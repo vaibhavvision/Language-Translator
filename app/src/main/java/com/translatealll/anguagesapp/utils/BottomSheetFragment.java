@@ -52,7 +52,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     DownloadClick langDownloadInterface = new DownloadClick() {
         @Override
         public void OnDownloadComplete(Boolean bool, String str, int i) {
-            lambda$new$0(bool, str, i);
+            downloadLanguage(bool, str, i);
         }
     };
 
@@ -67,7 +67,6 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         onCreateDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialogInterface) {
-//                setupRatio((BottomSheetDialog) dialogInterface);
             }
         });
         return onCreateDialog;
@@ -143,7 +142,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
 
     }
 
-    public void lambda$new$0(Boolean bool, String str, int i) {
+    public void downloadLanguage(Boolean bool, String str, int i) {
         islangdownloaded = bool.booleanValue();
         languagepack = str;
         iconlanguage = i;
@@ -152,13 +151,13 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         }
         try {
             Context requireContext = requireContext();
-            Toast.makeText(requireContext, BottomSheetFragment.languagepack + " downloaded", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(requireContext, BottomSheetFragment.languagepack + " downloaded", Toast.LENGTH_SHORT).show();
             dismiss();
             bottomSheetFragclicks.onDownloadComplete(true);
-            Toast.makeText(requireContext, languagepack + " downloaded", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(requireContext, languagepack + " downloaded", Toast.LENGTH_SHORT).show();
             dismiss();
             bottomSheetFragclicks.onDownloadComplete(true);
-            Toast.makeText(requireContext, languagepack + " downloaded", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(requireContext, languagepack + " downloaded", Toast.LENGTH_SHORT).show();
             dismiss();
             bottomSheetFragclicks.onDownloadComplete(true);
         } catch (Exception unused) {
@@ -230,17 +229,6 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         return arrayList;
     }
 
-
-//    public void setupRatio(BottomSheetDialog bottomSheetDialog) {
-//        FrameLayout frameLayout = (FrameLayout) bottomSheetDialog.findViewById(R.id.);
-//        BottomSheetBehavior from = BottomSheetBehavior.from(frameLayout);
-//        ViewGroup.LayoutParams layoutParams = frameLayout.getLayoutParams();
-//        layoutParams.height = getBottomSheetDialogDefaultHeight();
-//        frameLayout.setLayoutParams(layoutParams);
-//        from.setState(BottomSheetBehavior.STATE_EXPANDED);
-//    }
-
-
     public void filter(String text) {
         ArrayList<LnguageRepo> arrayList = new ArrayList<>();
         Iterator<LnguageRepo> it = langs_list.iterator();
@@ -255,15 +243,5 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         } else {
             downlodlngs_adapter.searchInfoList(arrayList);
         }
-    }
-
-    private int getBottomSheetDialogDefaultHeight() {
-        return (getWindowHeight() * 78) / 100;
-    }
-
-    private int getWindowHeight() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.heightPixels;
     }
 }

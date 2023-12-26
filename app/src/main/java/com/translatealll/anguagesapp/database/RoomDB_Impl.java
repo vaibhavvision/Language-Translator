@@ -16,14 +16,14 @@ import java.util.HashSet;
 public final class RoomDB_Impl extends RoomDB {
     private volatile Downloadedlngs_dao _downloadedlngsDao;
 
-    @Override // androidx.room.RoomDatabase
+    @Override
     protected SupportSQLiteOpenHelper createOpenHelper(DatabaseConfiguration configuration) {
         return configuration.sqliteOpenHelperFactory.create(SupportSQLiteOpenHelper.Configuration.builder(configuration.context).name(configuration.name).callback(new RoomOpenHelper(configuration, new RoomOpenHelper.Delegate(8) { // from class: com.video.gttranslator.database.RoomDB_Impl.1
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public void onPostMigrate(SupportSQLiteDatabase _db) {
             }
 
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public void createAllTables(SupportSQLiteDatabase _db) {
                 _db.execSQL("CREATE TABLE IF NOT EXISTS `WordsHistoryTable` (`lngsId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `language1` TEXT, `language2` TEXT, `texttotranslate` TEXT, `translatedtext` TEXT)");
                 _db.execSQL("CREATE TABLE IF NOT EXISTS `Chat_table` (`tableid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `chatname` TEXT, `lang1` TEXT, `lang2` TEXT, `texttotranslate` TEXT, `translatedtext` TEXT, `user` TEXT)");
@@ -32,7 +32,7 @@ public final class RoomDB_Impl extends RoomDB {
                 _db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '069b2766c3c226c6d06ab17c35ea13ea')");
             }
 
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public void dropAllTables(SupportSQLiteDatabase _db) {
                 _db.execSQL("DROP TABLE IF EXISTS `WordsHistoryTable`");
                 _db.execSQL("DROP TABLE IF EXISTS `Chat_table`");
@@ -45,7 +45,7 @@ public final class RoomDB_Impl extends RoomDB {
                 }
             }
 
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public void onCreate(SupportSQLiteDatabase _db) {
                 if (RoomDB_Impl.this.mCallbacks != null) {
                     int size = RoomDB_Impl.this.mCallbacks.size();
@@ -55,7 +55,7 @@ public final class RoomDB_Impl extends RoomDB {
                 }
             }
 
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public void onOpen(SupportSQLiteDatabase _db) {
                 RoomDB_Impl.this.mDatabase = _db;
                 RoomDB_Impl.this.internalInitInvalidationTracker(_db);
@@ -67,12 +67,12 @@ public final class RoomDB_Impl extends RoomDB {
                 }
             }
 
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public void onPreMigrate(SupportSQLiteDatabase _db) {
                 DBUtil.dropFtsSyncTriggers(_db);
             }
 
-            @Override // androidx.room.RoomOpenHelper.Delegate
+            @Override 
             public RoomOpenHelper.ValidationResult onValidateSchema(SupportSQLiteDatabase _db) {
                 HashMap hashMap = new HashMap(5);
                 hashMap.put("lngsId", new TableInfo.Column("lngsId", "INTEGER", true, 1, null, 1));
@@ -112,12 +112,12 @@ public final class RoomDB_Impl extends RoomDB {
         }, "069b2766c3c226c6d06ab17c35ea13ea", "e6ff379e5bd874adf5341a019ad8a58b")).build());
     }
 
-    @Override // androidx.room.RoomDatabase
+    @Override 
     protected InvalidationTracker createInvalidationTracker() {
         return new InvalidationTracker(this, new HashMap(0), new HashMap(0), "WordsHistoryTable", "Chat_table", "DownloadedLngs_Table");
     }
 
-    @Override // androidx.room.RoomDatabase
+    @Override 
     public void clearAllTables() {
         super.assertNotMainThread();
         SupportSQLiteDatabase writableDatabase = super.getOpenHelper().getWritableDatabase();
@@ -135,25 +135,8 @@ public final class RoomDB_Impl extends RoomDB {
             }
         }
     }
-
-//    @Override // androidx.room.RoomDatabase
-//    protected Map<Class<?>, List<Class<?>>> getRequiredTypeConverters() {
-//        HashMap hashMap = new HashMap();
-//        hashMap.put(Downloadedlngs_dao.class, DownloadedlngsDaoImpl.getRequiredConverters());
-//        return hashMap;
-//    }
-
-//    @Override // androidx.room.RoomDatabase
-//    public Set<Class<? extends AutoMigrationSpec>> getRequiredAutoMigrationSpecs() {
-//        return new HashSet();
-//    }
-
-//    @Override // androidx.room.RoomDatabase
-//    public List<Migration> getAutoMigrations(Map<Class<? extends AutoMigrationSpec>, AutoMigrationSpec> autoMigrationSpecsMap) {
-//        return Arrays.asList(new Migration[0]);
-//    }
-
-    @Override // com.video.gttranslator.database.RoomDB
+    
+    @Override 
     public Downloadedlngs_dao downloadedlngs_dao() {
         Downloadedlngs_dao downloadedlngs_dao;
         if (this._downloadedlngsDao != null) {

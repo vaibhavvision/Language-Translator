@@ -44,13 +44,13 @@ public final class CountryRepo {
         }
         if (obj instanceof CountryRepo) {
             CountryRepo country = (CountryRepo) obj;
-            return this.suggestname == country.suggestname && Intrinsics.areEqual(this.name, country.name);
+            return suggestname == country.suggestname && Intrinsics.areEqual(name, country.name);
         }
         return false;
     }
 
     public int hashCode() {
-        return (((Integer.hashCode(Integer.parseInt(this.suggestname)) * 31) + this.name.hashCode()) * 31);
+        return (((Integer.hashCode(Integer.parseInt(suggestname)) * 31) + name.hashCode()) * 31);
     }
 
 

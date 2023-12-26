@@ -23,18 +23,13 @@ public class PhrasesActivity extends AppCompatActivity implements ParagraphDialo
     String lang1;
     String lang2;
     PhrasesAdapter phrasemainAdapter;
-
     String[] phrasetitles_list;
 
     int[] title_icon = {R.drawable.ic_pgs_1, R.drawable.ic_pgs_2, R.drawable.ic_pgs_3, R.drawable.ic_pgs_4, R.drawable.ic_pgs_5, R.drawable.ic_pgs_6, R.drawable.ic_pgs_7, R.drawable.ic_pgs_8, R.drawable.ic_pgs_9};
 
     PharsesFragment bottomSheetParagraphFragment;
-    boolean isDropDownOpen = false;
     ArrayList<PhraseTittleRepo> phrasetitlemodellist = new ArrayList<>();
-
     ActivityPhrasesBinding binding;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,7 +74,6 @@ public class PhrasesActivity extends AppCompatActivity implements ParagraphDialo
                         onBackPressed();
                     }
                 });
-
                 return;
             }
         }
